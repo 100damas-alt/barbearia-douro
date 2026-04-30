@@ -13,6 +13,7 @@
       --champagne: #D4AF37;
       --warm-white: #FAF8F5;
       --cream: #F5F0E8;
+      --bronze: #8B6914;
       --success: #2ecc71;
       --danger: #e74c3c;
     }
@@ -282,6 +283,21 @@
       color: #e74c3c;
     }
 
+    .badge-pending {
+      background: rgba(241, 196, 15, 0.2);
+      color: #f1c40f;
+    }
+
+    .badge-active {
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+    }
+
+    .badge-inactive {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -464,6 +480,14 @@
 
     <!-- Messages History Tab -->
     <div id="messages-tab" class="tab-content">
+      <!-- Twilio Status -->
+      <div class="filter-section">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <span style="color: #888; font-family: 'Montserrat', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Estado do Serviço SMS:</span>
+          <span id="twilioStatus" class="badge badge-inactive">A verificar...</span>
+        </div>
+      </div>
+
       <h3 style="color: var(--warm-white); margin-bottom: 16px;">Histórico de Mensagens SMS</h3>
       <p style="color: #888; margin-bottom: 24px; font-size: 14px;">
         Registo de todas as mensagens SMS enviadas automaticamente quando um cliente liga e não é atendido.
@@ -476,11 +500,12 @@
               <th>Telefone</th>
               <th>Data/Hora</th>
               <th>Estado</th>
+              <th>SMS SID</th>
             </tr>
           </thead>
           <tbody id="messagesTable">
             <tr>
-              <td colspan="4" class="loading">A carregar mensagens</td>
+              <td colspan="5" class="loading">A carregar mensagens</td>
             </tr>
           </tbody>
         </table>
@@ -512,6 +537,7 @@
       }
       loadAppointments();
       loadMessages();
+      loadTwilioStatus();
     });
 
     function getAuthHeaders() {
@@ -649,9 +675,31 @@
 
     // ============ Messages History ============
 
+    async function loadTwilioStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/api/twilio/status`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const statusEl = document.getElementById('twilioStatus');
+          if (data.configured) {
+            statusEl.textContent = 'Ativo';
+            statusEl.className = 'badge badge-active';
+          } else {
+            statusEl.textContent = 'Não configurado';
+            statusEl.className = 'badge badge-inactive';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading Twilio status:', error);
+      }
+    }
+
     async function loadMessages() {
       const tbody = document.getElementById('messagesTable');
-      tbody.innerHTML = '<tr><td colspan="4" class="loading">A carregar mensagens</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="loading">A carregar mensagens</td></tr>';
 
       try {
         const response = await fetch(`${API_BASE}/api/messages`, {
@@ -668,7 +716,7 @@
         renderMessages();
       } catch (error) {
         console.error('Error loading messages:', error);
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><h3>Erro ao carregar</h3></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>Erro ao carregar</h3></td></tr>';
       }
     }
 
@@ -676,7 +724,7 @@
       const tbody = document.getElementById('messagesTable');
 
       if (messages.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><h3>Nenhuma mensagem encontrada</h3><p>Ainda não há mensagens enviadas.</p></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>Nenhuma mensagem encontrada</h3><p>Ainda não há mensagens enviadas.</p></td></tr>';
         return;
       }
 
@@ -696,7 +744,7 @@
         } else if (msg.smsError) {
           statusBadge = `<span class="badge badge-failed" title="${escapeHtml(msg.smsError)}">Falhou</span>`;
         } else {
-          statusBadge = '<span class="badge badge-failed">Pendente</span>';
+          statusBadge = '<span class="badge badge-pending">Pendente</span>';
         }
 
         return `
@@ -705,6 +753,7 @@
             <td>${escapeHtml(msg.phone)}</td>
             <td>${formattedDate}</td>
             <td>${statusBadge}</td>
+            <td>${msg.smsSid ? escapeHtml(msg.smsSid.substring(0, 20)) + '...' : '—'}</td>
           </tr>
         `;
       }).join('');
