@@ -689,11 +689,12 @@
 
     /* Calendar Grid */
     .calendar-container {
-      background: var(--black);
-      border: 1px solid #333;
+      background: var(--warm-white);
+      border: 1px solid #ddd;
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 24px;
+      color: var(--black);
     }
     .calendar-header {
       display: flex;
@@ -702,9 +703,11 @@
       margin-bottom: 16px;
     }
     .calendar-month-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      color: var(--champagne);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--black);
+      text-transform: uppercase;
     }
     .calendar-grid {
       display: grid;
@@ -714,9 +717,10 @@
     .calendar-weekday {
       font-size: 10px;
       text-transform: uppercase;
-      color: #555;
+      color: #999;
       text-align: center;
       padding-bottom: 8px;
+      font-weight: 700;
     }
     .calendar-day {
       aspect-ratio: 1;
@@ -728,26 +732,42 @@
       cursor: pointer;
       transition: all 0.2s;
       border: 1px solid transparent;
-      color: #ccc;
+      color: #333;
+      font-weight: 500;
     }
     .calendar-day:hover:not(.disabled) {
-      border-color: var(--champagne);
-      color: var(--champagne);
+      background: #f0f0f0;
+      color: var(--dark-gold);
     }
     .calendar-day.selected {
-      background: var(--dark-gold);
-      color: var(--black);
+      background: var(--dark-gold) !important;
+      color: var(--black) !important;
       font-weight: 700;
     }
     .calendar-day.disabled {
-      color: #333;
+      color: #ccc;
       cursor: not-allowed;
       text-decoration: line-through;
+      background: #fafafa;
     }
     .calendar-day.today {
-      color: var(--champagne);
-      text-decoration: underline;
+      color: var(--dark-gold);
+      border-bottom: 2px solid var(--dark-gold);
+      border-radius: 0;
     }
+    .calendar-nav-btn {
+      background: #eee;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+    .calendar-nav-btn:hover { background: #ddd; }
 
     /* Time Grid */
     .time-grid {
@@ -1051,7 +1071,7 @@
               <option value="classic-haircut">Corte Clássico — €25</option>
               <option value="beard-shave">Barba e Barbear — €30</option>
               <option value="complete-package">Pacote Completo — €45</option>
-              <option value="kids-haircut">Corte Infantil — €18</option>
+              <option value="kids-haircut">Corte Infantil — ��18</option>
             </select>
           </div>
           <div class="form-group">
@@ -1130,12 +1150,28 @@
         <form onsubmit="handleBookingSubmit(event)">
           <!-- Step 1: Barber & Service -->
           <div class="booking-step-content active" id="step1">
-            <h4 style="margin-bottom: 16px; color: var(--champagne);">Selecione o Barbeiro</h4>
-            <div class="barber-grid" id="barberGrid">
+            <h4 style="margin-bottom: 16px; color: var(--champagne);">Escolha o Barbeiro e Data</h4>
+            
+            <div class="barber-grid" id="barberGrid" style="margin-bottom: 24px;">
               <!-- Barbers will be loaded here -->
             </div>
             
-            <div class="form-group">
+            <!-- Calendar Integrated into Step 1 -->
+            <div id="calendarDisplay" style="display: none;">
+              <div class="calendar-container">
+                <div class="calendar-header">
+                  <button type="button" class="calendar-nav-btn" onclick="changeMonth(-1)">&lt;</button>
+                  <div class="calendar-month-name" id="calendarMonth">Maio 2024</div>
+                  <button type="button" class="calendar-nav-btn" onclick="changeMonth(1)">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                  <!-- Calendar days -->
+                </div>
+              </div>
+              <input type="hidden" id="bookDate" name="date" required>
+            </div>
+
+            <div class="form-group" style="margin-top: 24px;">
               <label for="bookService">Serviço *</label>
               <select id="bookService" name="service" required>
                 <option value="">Selecione um serviço</option>
@@ -1148,30 +1184,20 @@
 
             <div class="step-nav">
               <div></div>
-              <button type="button" class="btn btn-primary" onclick="goToStep(2)">Próximo</button>
+              <button type="button" class="btn btn-primary" onclick="goToStep(2)">Escolher Horário</button>
             </div>
           </div>
 
-          <!-- Step 2: Date & Time -->
+          <!-- Step 2: Time Selection -->
           <div class="booking-step-content" id="step2">
-            <h4 style="margin-bottom: 16px; color: var(--champagne);">Data e Horário</h4>
+            <h4 style="margin-bottom: 16px; color: var(--champagne);">Horário Disponível</h4>
             
-            <div class="calendar-container">
-              <div class="calendar-header">
-                <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="changeMonth(-1)">&lt;</button>
-                <div class="calendar-month-name" id="calendarMonth">Maio 2024</div>
-                <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="changeMonth(1)">&gt;</button>
-              </div>
-              <div class="calendar-grid" id="calendarGrid">
-                <!-- Calendar days will be loaded here -->
-              </div>
-            </div>
-            <input type="hidden" id="bookDate" name="date" required>
-
             <div class="form-group">
-              <label>Horário Disponível *</label>
+              <div id="selectedInfo" style="background: var(--black); padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; border-left: 3px solid var(--dark-gold);">
+                <!-- Date/Barber summary -->
+              </div>
               <div class="time-grid" id="timeGrid">
-                <p style="color:#666; font-size:14px;">Selecione primeiro uma data no calendário</p>
+                <!-- Slots loaded here -->
               </div>
               <input type="hidden" id="bookTime" name="time" required>
               <span class="form-error" id="timeError" style="margin-top:8px">Por favor, selecione um horário disponível</span>
@@ -1252,17 +1278,24 @@
             alert('Por favor, selecione um barbeiro');
             return;
           }
-          if (!document.getElementById('bookService').value) {
-            alert('Por favor, selecione um serviço');
-            return;
-          }
-          renderCalendar();
-        }
-        if (currentStep === 2) {
           if (!document.getElementById('bookDate').value) {
             alert('Por favor, selecione uma data no calendário');
             return;
           }
+          if (!document.getElementById('bookService').value) {
+            alert('Por favor, selecione um serviço');
+            return;
+          }
+          
+          // Show summary in Step 2
+          const barberName = document.querySelector('.barber-card.selected').textContent;
+          const dateStr = document.getElementById('bookDate').value;
+          const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
+          document.getElementById('selectedInfo').innerHTML = `<strong>Barbeiro:</strong> ${barberName} <br> <strong>Data:</strong> ${formattedDate}`;
+          
+          loadAvailableSlots();
+        }
+        if (currentStep === 2) {
           if (!document.getElementById('bookTime').value) {
             alert('Por favor, selecione um horário');
             return;
@@ -1286,7 +1319,8 @@
     function renderCalendar() {
       const grid = document.getElementById('calendarGrid');
       const monthLabel = document.getElementById('calendarMonth');
-      
+      if (!grid || !monthLabel) return;
+
       const year = calendarViewDate.getFullYear();
       const month = calendarViewDate.getMonth();
       
@@ -1298,7 +1332,7 @@
       
       grid.innerHTML = '';
       
-      ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].forEach(d => {
+      ["D", "S", "T", "Q", "Q", "S", "S"].forEach(d => {
         const el = document.createElement('div');
         el.className = 'calendar-weekday';
         el.textContent = d;
@@ -1345,7 +1379,6 @@
       element.classList.add('selected');
       document.getElementById('bookDate').value = dateStr;
       document.getElementById('bookTime').value = ''; 
-      loadAvailableSlots();
     }
 
     // Load barbers list as grid
@@ -1364,10 +1397,14 @@
             document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             document.getElementById('bookBarber').value = barber.id;
-            if (document.getElementById('bookDate').value) {
-              loadAvailableSlots();
-              renderCalendar();
-            }
+            
+            // Show calendar once barber is selected
+            document.getElementById('calendarDisplay').style.display = 'block';
+            renderCalendar();
+            
+            // Clear date if barber changes
+            document.getElementById('bookDate').value = '';
+            document.getElementById('bookTime').value = '';
           };
           barberGrid.appendChild(card);
         });
@@ -1382,7 +1419,7 @@
       const timeGrid = document.getElementById('timeGrid');
       const barber = document.getElementById('bookBarber').value;
       
-      if (!date) return;
+      if (!date || !timeGrid) return;
       timeGrid.innerHTML = '<p style="color:#666; font-size:14px;">A carregar horários...</p>';
       
       try {
@@ -1400,8 +1437,10 @@
             const btn = document.createElement('div');
             btn.className = `time-slot ${slot.available ? '' : 'unavailable'}`;
             btn.textContent = slot.time;
+            
             if (slot.available) {
               btn.onclick = (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                 btn.classList.add('selected');
