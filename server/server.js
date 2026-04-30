@@ -411,4 +411,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Admin password: luis123`);
   console.log(`Twilio configured: ${twilioClient ? 'Yes' : 'No'}`);
   console.log(`Barbers: ${BARBERS.map(b => b.name).join(', ')}`);
-});
+});// Force redeploy comment
