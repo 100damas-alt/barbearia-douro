@@ -219,6 +219,29 @@
       background: rgba(250,248,245,0.1);
     }
 
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .action-btn.delete {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .action-btn.delete:hover {
+      background: var(--danger);
+      color: var(--black);
+    }
+
     /* Table */
     .table-container {
       background: var(--charcoal);
@@ -408,6 +431,7 @@
     <!-- Tabs -->
     <div class="tabs">
       <button class="tab active" onclick="switchTab('appointments')">Marcações</button>
+      <button class="tab" onclick="switchTab('barbers')">Barbeiros</button>
       <button class="tab" onclick="switchTab('messages')">Histórico de Mensagens</button>
     </div>
 
@@ -491,6 +515,36 @@
       </div>
     </div>
 
+    <!-- Barbers Management Tab -->
+    <div id="barbers-tab" class="tab-content">
+      <div class="filter-section" style="justify-content: space-between;">
+        <h3 style="color: var(--warm-white);">Gestão de Barbeiros (Férias / Atividade)</h3>
+        <button class="btn btn-primary" onclick="loadBarbersAdmin()">Atualizar Lista</button>
+      </div>
+      
+      <p style="color: #888; margin-bottom: 24px; font-size: 14px;">
+        Desative um barbeiro quando ele estiver de férias ou ausente. Barbeiros desativados não aparecerão no sistema de marcações.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Estado Atual</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="barbersTable">
+            <tr>
+              <td colspan="4" class="loading">A carregar barbeiros</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Messages History Tab -->
     <div id="messages-tab" class="tab-content">
       <!-- Twilio Status -->
@@ -551,11 +605,12 @@
       loadAppointments();
       loadMessages();
       loadTwilioStatus();
+      loadBarbersAdmin();
     });
 
     function getAuthHeaders() {
       const token = localStorage.getItem('adminToken');
-      return token ? { 'x-admin-token': token } : {};
+      return token ? { 'x-admin-token': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
     }
 
     function logout() {
@@ -690,6 +745,67 @@
         }
       } catch (error) {
         showToast('Erro ao cancelar marcação', true);
+      }
+    }
+
+    // ============ Barbers Management ============
+
+    async function loadBarbersAdmin() {
+      const tbody = document.getElementById('barbersTable');
+      tbody.innerHTML = '<tr><td colspan="4" class="loading">A carregar barbeiros</td></tr>';
+
+      try {
+        const response = await fetch(`${API_BASE}/api/barbers`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+          const barbers = await response.json();
+          renderBarbersAdmin(barbers);
+        }
+      } catch (error) {
+        console.error('Error loading barbers:', error);
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Erro ao carregar</td></tr>';
+      }
+    }
+
+    function renderBarbersAdmin(barbers) {
+      const tbody = document.getElementById('barbersTable');
+      tbody.innerHTML = barbers.map(barber => {
+        const statusBadge = barber.active 
+          ? '<span class="badge badge-active">Ativo</span>' 
+          : '<span class="badge badge-inactive">Em Férias / Ausente</span>';
+        
+        const actionBtn = barber.active
+          ? `<button class="btn btn-secondary" style="font-size: 11px; padding: 6px 12px;" onclick="toggleBarberStatus('${barber.id}', false)">Colocar de Férias</button>`
+          : `<button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px;" onclick="toggleBarberStatus('${barber.id}', true)">Ativar Barbeiro</button>`;
+
+        return `
+          <tr>
+            <td>${barber.id}</td>
+            <td><strong>${barber.name}</strong></td>
+            <td>${statusBadge}</td>
+            <td>${actionBtn}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function toggleBarberStatus(id, newStatus) {
+      try {
+        const response = await fetch(`${API_BASE}/api/barbers/${id}`, {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ active: newStatus })
+        });
+
+        if (response.ok) {
+          showToast(`Estado do barbeiro atualizado!`);
+          loadBarbersAdmin();
+          // Update the filter dropdown in appointments tab too if needed
+        }
+      } catch (error) {
+        showToast('Erro ao atualizar estado', true);
       }
     }
 

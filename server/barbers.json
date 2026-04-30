@@ -1,0 +1,8 @@
+[
+  { "id": "miranda", "name": "Miranda", "active": true },
+  { "id": "ricardo", "name": "Ricardo", "active": true },
+  { "id": "duarte", "name": "Duarte", "active": true },
+  { "id": "eduardo", "name": "Eduardo", "active": true },
+  { "id": "joao", "name": "João", "active": true },
+  { "id": "alex", "name": "Alex", "active": true }
+]

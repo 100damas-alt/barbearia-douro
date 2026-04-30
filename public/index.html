@@ -619,6 +619,116 @@
     .form-error { color: #e74c3c; font-size: 12px; display: none; }
     .form-group.error .form-error { display: block; }
 
+    /* Progress Steps */
+    .booking-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      position: relative;
+    }
+    .booking-steps::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #333;
+      z-index: 0;
+    }
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      background: var(--charcoal);
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #888;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+    .step-dot.active {
+      border-color: var(--dark-gold);
+      color: var(--dark-gold);
+      background: var(--black);
+    }
+    .step-dot.completed {
+      background: var(--dark-gold);
+      border-color: var(--dark-gold);
+      color: var(--black);
+    }
+
+    /* Barber Grid */
+    .barber-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .barber-card {
+      background: var(--black);
+      border: 1px solid #333;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .barber-card:hover { border-color: var(--champagne); }
+    .barber-card.selected {
+      border-color: var(--dark-gold);
+      background: rgba(184,134,11,0.1);
+    }
+    .barber-card i { font-size: 24px; color: var(--champagne); margin-bottom: 8px; display: block; }
+    .barber-card span { font-weight: 600; }
+
+    /* Time Grid */
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .time-slot {
+      padding: 10px 4px;
+      background: var(--black);
+      border: 1px solid #333;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .time-slot:hover:not(.unavailable) {
+      border-color: var(--champagne);
+      color: var(--champagne);
+    }
+    .time-slot.selected {
+      background: var(--dark-gold);
+      border-color: var(--dark-gold);
+      color: var(--black);
+    }
+    .time-slot.unavailable {
+      opacity: 0.3;
+      cursor: not-allowed;
+      background: #111;
+    }
+
+    .booking-step-content { display: none; }
+    .booking-step-content.active { display: block; }
+
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+      gap: 16px;
+    }
+
     /* Slot unavailable style */
     .time-slot.unavailable {
       background: #333 !important;
@@ -944,65 +1054,91 @@
 
       <!-- Booking Form -->
       <div class="modal-body modal-form" id="bookingForm">
+        <!-- Progress Bar -->
+        <div class="booking-steps">
+          <div class="step-dot active" id="dot1">1</div>
+          <div class="step-dot" id="dot2">2</div>
+          <div class="step-dot" id="dot3">3</div>
+        </div>
+
         <form onsubmit="handleBookingSubmit(event)">
-          <div class="form-group">
-            <label for="bookName">Nome Completo *</label>
-            <input type="text" id="bookName" name="name" placeholder="O seu nome" required minlength="2">
-            <span class="form-error">Por favor, insira o seu nome (mínimo 2 caracteres)</span>
+          <!-- Step 1: Barber & Service -->
+          <div class="booking-step-content active" id="step1">
+            <h4 style="margin-bottom: 16px; color: var(--champagne);">Selecione o Barbeiro</h4>
+            <div class="barber-grid" id="barberGrid">
+              <!-- Barbers will be loaded here -->
+            </div>
+            
+            <div class="form-group">
+              <label for="bookService">Serviço *</label>
+              <select id="bookService" name="service" required>
+                <option value="">Selecione um serviço</option>
+                <option value="classic-haircut">Corte Clássico — €25</option>
+                <option value="beard-shave">Barba e Barbear — €30</option>
+                <option value="complete-package">Pacote Completo — €45</option>
+                <option value="kids-haircut">Corte Infantil — €18</option>
+              </select>
+            </div>
+
+            <div class="step-nav">
+              <div></div>
+              <button type="button" class="btn btn-primary" onclick="goToStep(2)">Próximo</button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="bookEmail">Email *</label>
-            <input type="email" id="bookEmail" name="email" placeholder="seu@email.com" required>
-            <span class="form-error">Por favor, insira um email válido</span>
+          <!-- Step 2: Date & Time -->
+          <div class="booking-step-content" id="step2">
+            <h4 style="margin-bottom: 16px; color: var(--champagne);">Data e Horário</h4>
+            <div class="form-group">
+              <label for="bookDate">Data Pretendida *</label>
+              <input type="date" id="bookDate" name="date" required onchange="loadAvailableSlots()">
+            </div>
+
+            <div class="form-group">
+              <label>Horário Disponível *</label>
+              <div class="time-grid" id="timeGrid">
+                <!-- Slots will be loaded here -->
+              </div>
+              <input type="hidden" id="bookTime" name="time" required>
+              <span class="form-error" id="timeError" style="margin-top:8px">Por favor, selecione um horário disponível</span>
+            </div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Voltar</button>
+              <button type="button" class="btn btn-primary" onclick="goToStep(3)">Próximo</button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="bookPhone">Telefone *</label>
-            <input type="tel" id="bookPhone" name="phone" placeholder="+351 900 000 000" required pattern="\+?[0-9\s]{9,}">
-            <span class="form-error">Por favor, insira um número de telefone válido</span>
+          <!-- Step 3: Personal Details -->
+          <div class="booking-step-content" id="step3">
+            <h4 style="margin-bottom: 16px; color: var(--champagne);">Os Seus Dados</h4>
+            <div class="form-group">
+              <label for="bookName">Nome Completo *</label>
+              <input type="text" id="bookName" name="name" placeholder="O seu nome" required minlength="2">
+            </div>
+
+            <div class="form-group">
+              <label for="bookEmail">Email *</label>
+              <input type="email" id="bookEmail" name="email" placeholder="seu@email.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bookPhone">Telefone *</label>
+              <input type="tel" id="bookPhone" name="phone" placeholder="+351 900 000 000" required pattern="\+?[0-9\s]{9,}">
+            </div>
+
+            <div class="form-group">
+              <label for="bookNotes">Pedidos Especiais</label>
+              <textarea id="bookNotes" name="notes" placeholder="Algum pedido especial?" maxlength="500"></textarea>
+            </div>
+
+            <div class="step-nav">
+              <button type="button" class="btn btn-secondary" onclick="goToStep(2)">Voltar</button>
+              <button type="submit" class="btn btn-primary" id="bookBtn">Confirmar Marcação</button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="bookService">Serviço *</label>
-            <select id="bookService" name="service" required>
-              <option value="">Selecione um serviço</option>
-              <option value="classic-haircut">Corte Clássico — €25</option>
-              <option value="beard-shave">Barba e Barbear — €30</option>
-              <option value="complete-package">Pacote Completo — €45</option>
-              <option value="kids-haircut">Corte Infantil — €18</option>
-            </select>
-            <span class="form-error">Por favor, selecione um serviço</span>
-          </div>
-
-          <div class="form-group">
-            <label for="bookDate">Data Pretendida *</label>
-            <input type="date" id="bookDate" name="date" required onchange="loadAvailableSlots()">
-            <span class="form-error">Por favor, selecione uma data válida</span>
-          </div>
-
-          <div class="form-group">
-            <label for="bookTime">Horário Pretendido *</label>
-            <select id="bookTime" name="time" required>
-              <option value="">Selecione primeiro uma data</option>
-            </select>
-            <span class="form-error" id="timeError">Por favor, selecione um horário disponível</span>
-          </div>
-
-          <div class="form-group">
-            <label for="bookBarber">Barbeiro *</label>
-            <select id="bookBarber" name="barber" required>
-              <option value="">Carregando...</option>
-            </select>
-            <span class="form-error">Por favor, selecione um barbeiro</span>
-          </div>
-
-          <div class="form-group">
-            <label for="bookNotes">Pedidos Especiais</label>
-            <textarea id="bookNotes" name="notes" placeholder="Algum pedido especial?" maxlength="500"></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary" id="bookBtn">Confirmar Marcação</button>
+          <input type="hidden" id="bookBarber" name="barber" required>
         </form>
       </div>
 
@@ -1032,24 +1168,120 @@
       document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
     }
 
-    // Load barbers list
+    // Booking Steps Navigation
+    let currentStep = 1;
+    function goToStep(step) {
+      // Validation before moving forward
+      if (step > currentStep) {
+        if (currentStep === 1) {
+          if (!document.getElementById('bookBarber').value) {
+            alert('Por favor, selecione um barbeiro');
+            return;
+          }
+          if (!document.getElementById('bookService').value) {
+            alert('Por favor, selecione um serviço');
+            return;
+          }
+        }
+        if (currentStep === 2) {
+          if (!document.getElementById('bookDate').value) {
+            alert('Por favor, selecione uma data');
+            return;
+          }
+          if (!document.getElementById('bookTime').value) {
+            alert('Por favor, selecione um horário');
+            return;
+          }
+        }
+      }
+
+      // Transition steps
+      document.querySelectorAll('.booking-step-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+      
+      // Update dots
+      document.querySelectorAll('.step-dot').forEach((dot, idx) => {
+        const dotNum = idx + 1;
+        dot.classList.toggle('active', dotNum === step);
+        dot.classList.toggle('completed', dotNum < step);
+      });
+
+      currentStep = step;
+    }
+
+    // Load barbers list as grid
     async function loadBarbers() {
       try {
         const response = await fetch(`${API_BASE}/api/barbers`);
         const barbers = await response.json();
         
-        const barberSelect = document.getElementById('bookBarber');
-        barberSelect.innerHTML = '<option value="">Selecione um barbeiro</option>';
+        const barberGrid = document.getElementById('barberGrid');
+        barberGrid.innerHTML = '';
         
         barbers.forEach(barber => {
-          const option = document.createElement('option');
-          option.value = barber.id;
-          option.textContent = barber.name;
-          barberSelect.appendChild(option);
+          const card = document.createElement('div');
+          card.className = 'barber-card';
+          card.innerHTML = `
+            <span>${barber.name}</span>
+          `;
+          card.onclick = () => {
+            document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('bookBarber').value = barber.id;
+            loadAvailableSlots(); // Refresh slots if date already selected
+          };
+          barberGrid.appendChild(card);
         });
       } catch (error) {
         console.error('Error loading barbers:', error);
-        document.getElementById('bookBarber').innerHTML = '<option value="">Erro ao carregar</option>';
+      }
+    }
+
+    // Load available slots as grid
+    async function loadAvailableSlots() {
+      const dateInput = document.getElementById('bookDate');
+      const timeGrid = document.getElementById('timeGrid');
+      const barber = document.getElementById('bookBarber').value;
+      const date = dateInput.value;
+      
+      if (!date) {
+        timeGrid.innerHTML = '<p style="color:#666; font-size:14px;">Selecione primeiro uma data</p>';
+        return;
+      }
+      
+      timeGrid.innerHTML = '<p style="color:#666; font-size:14px;">A carregar horários...</p>';
+      
+      try {
+        const url = barber ? `${API_BASE}/api/slots/${date}?barber=${barber}` : `${API_BASE}/api/slots/${date}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        timeGrid.innerHTML = '';
+        
+        if (data.message) {
+          timeGrid.innerHTML = `<p style="color:#e74c3c; font-size:14px;">${data.message}</p>`;
+        } else if (data.slots.length === 0) {
+          timeGrid.innerHTML = '<p style="color:#e74c3c; font-size:14px;">Sem horários disponíveis para este dia.</p>';
+        } else {
+          data.slots.forEach(slot => {
+            const btn = document.createElement('div');
+            btn.className = `time-slot ${slot.available ? '' : 'unavailable'}`;
+            btn.textContent = slot.time;
+            
+            if (slot.available) {
+              btn.onclick = () => {
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('bookTime').value = slot.time;
+              };
+            }
+            
+            timeGrid.appendChild(btn);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading slots:', error);
+        timeGrid.innerHTML = '<p style="color:#e74c3c; font-size:14px;">Erro ao carregar horários.</p>';
       }
     }
 
@@ -1150,10 +1382,13 @@
       document.getElementById('bookBtn').classList.remove('loading');
       form.querySelector('form').reset();
       
-      // Reset time select
-      const timeSelect = document.getElementById('bookTime');
-      timeSelect.innerHTML = '<option value="">Selecione primeiro uma data</option>';
-      timeSelect.disabled = false;
+      // Reset steps
+      goToStep(1);
+      
+      // Reset selections
+      document.getElementById('bookBarber').value = '';
+      document.getElementById('bookTime').value = '';
+      document.getElementById('timeGrid').innerHTML = '<p style="color:#666; font-size:14px;">Selecione primeiro uma data</p>';
     }
 
     // Handle booking submission

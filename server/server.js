@@ -20,20 +20,35 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'bookings.json');
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
+const BARBERS_FILE = path.join(__dirname, 'barbers.json');
 const ADMIN_PASSWORD = 'luis123';
 
 // FIXED SMS template - managed service, not editable
 const SMS_TEMPLATE = 'Olá! Vimos que nos ligou. Pode marcar o seu corte diretamente no nosso site: https://barbearia-douro.onrender.com';
 
-// Barbers list
-const BARBERS = [
-  { id: 'miranda', name: 'Miranda' },
-  { id: 'ricardo', name: 'Ricardo' },
-  { id: 'duarte', name: 'Duarte' },
-  { id: 'eduardo', name: 'Eduardo' },
-  { id: 'joao', name: 'João' },
-  { id: 'alex', name: 'Alex' }
-];
+// ============ Data Storage ============
+
+function loadBarbers() {
+  try {
+    if (fs.existsSync(BARBERS_FILE)) {
+      return JSON.parse(fs.readFileSync(BARBERS_FILE, 'utf8'));
+    }
+  } catch (error) {
+    console.error('Error loading barbers:', error);
+  }
+  return [
+    { id: 'miranda', name: 'Miranda', active: true },
+    { id: 'ricardo', name: 'Ricardo', active: true },
+    { id: 'duarte', name: 'Duarte', active: true },
+    { id: 'eduardo', name: 'Eduardo', active: true },
+    { id: 'joao', name: 'João', active: true },
+    { id: 'alex', name: 'Alex', active: true }
+  ];
+}
+
+function saveBarbers(barbers) {
+  fs.writeFileSync(BARBERS_FILE, JSON.stringify(barbers, null, 2));
+}
 
 // Middleware
 app.use(cors());
@@ -190,7 +205,31 @@ app.get('/api/admin/status', (req, res) => {
 
 // Get barbers list
 app.get('/api/barbers', (req, res) => {
-  res.json(BARBERS);
+  const barbers = loadBarbers();
+  // If admin token provided, return all. Otherwise only active.
+  const token = req.headers['x-admin-token'];
+  if (token && token === adminToken) {
+    return res.json(barbers);
+  }
+  res.json(barbers.filter(b => b.active));
+});
+
+// Update barber status (admin only)
+app.patch('/api/barbers/:id', verifyToken, (req, res) => {
+  const { id } = req.params;
+  const { active } = req.body;
+  
+  const barbers = loadBarbers();
+  const index = barbers.findIndex(b => b.id === id);
+  
+  if (index === -1) {
+    return res.status(404).json({ error: 'Barbeiro não encontrado' });
+  }
+  
+  barbers[index].active = active;
+  saveBarbers(barbers);
+  
+  res.json({ success: true, barber: barbers[index] });
 });
 
 // Get all appointments
@@ -259,10 +298,12 @@ app.post('/api/appointments', (req, res) => {
   }
   
   // Validate barber if provided
-  const barberId = barber || BARBERS[0].id; // Default to first barber
-  const validBarber = BARBERS.some(b => b.id === barberId);
-  if (!validBarber) {
-    return res.status(400).json({ error: 'Barbeiro inválido' });
+  const barbers = loadBarbers();
+  const barberId = barber || (barbers.find(b => b.active) || barbers[0]).id; // Default to first active barber
+  const barberInfo = barbers.find(b => b.id === barberId);
+  
+  if (!barberInfo || !barberInfo.active) {
+    return res.status(400).json({ error: 'Barbeiro indisponível ou inválido' });
   }
   
   const slotCheck = isSlotAvailable(date, time);
@@ -276,7 +317,6 @@ app.post('/api/appointments', (req, res) => {
   
   try {
     const bookings = loadBookings();
-    const barberInfo = BARBERS.find(b => b.id === barberId);
     const newBooking = {
       id: bookings.length > 0 ? Math.max(...bookings.map(b => b.id)) + 1 : 1,
       name, email, phone, service, date, time,
@@ -410,5 +450,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Admin dashboard: http://localhost:${PORT}/admin.html`);
   console.log(`Admin password: luis123`);
   console.log(`Twilio configured: ${twilioClient ? 'Yes' : 'No'}`);
-  console.log(`Barbers: ${BARBERS.map(b => b.name).join(', ')}`);
+  console.log(`Barbers: ${loadBarbers().map(b => b.name).join(', ')}`);
 });// Force redeploy comment
