@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barbearia D'Ouro — Estilo e Tradição</title>
+  <title>Barbearia D'Ouro — Onde a Tradição Encontra a Excelência</title>
   <meta name="description" content="Serviços de barbearia premium em Portugal. Marque o seu agendamento hoje.">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
   <style>
@@ -199,7 +199,7 @@
       justify-content: center;
       text-align: center;
       position: relative;
-      background: url('images/interior-1.png') center/cover no-repeat;
+      background: url('images/hero-banner.jpg') center/cover no-repeat;
     }
 
     .hero::before {
@@ -346,7 +346,7 @@
     /* Booking CTA Section */
     .booking-cta {
       position: relative;
-      background: url('images/interior-3.png') center/cover no-repeat;
+      background: url('images/booking-cta.jpg') center/cover no-repeat;
       text-align: center;
     }
 
@@ -443,7 +443,6 @@
 
     .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-group label { font-family: 'Montserrat', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--black); font-weight: 600; }
-    .modal-body .form-group label { color: var(--champagne); }
 
     .form-group input, .form-group select, .form-group textarea {
       background: var(--black);
@@ -459,12 +458,6 @@
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       outline: none;
       border-color: var(--dark-gold);
-    }
-
-    /* Date picker visibility fix */
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1) sepia(100%) saturate(500%) hue-rotate(10deg);
-      cursor: pointer;
     }
 
     .form-group input::placeholder, .form-group textarea::placeholder { color: #666; }
@@ -704,7 +697,7 @@
           </div>
         </div>
         <div class="service-card fade-in">
-          <img src="images/interior-2.png" alt="Pacote Completo">
+          <img src="images/hero-banner.jpg" alt="Pacote Completo">
           <div class="service-card-content">
             <h3>Pacote Completo</h3>
             <p>Serviço completo incluindo corte, barba e tratamento facial.</p>
@@ -724,22 +717,22 @@
       </div>
       <div class="gallery-grid">
         <div class="gallery-item fade-in">
-          <img src="images/interior-1.png" alt="Interior da barbearia">
+          <img src="images/gallery-1.jpg" alt="Interior da barbearia">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/interior-2.png" alt="Estilização de cabelo">
+          <img src="images/gallery-2.jpg" alt="Estilização de cabelo">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/interior-3.png" alt="Aparar barba">
+          <img src="images/gallery-3.jpg" alt="Aparar barba">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/interior-4.png" alt="Ferramentas de grooming premium">
+          <img src="images/gallery-4.jpg" alt="Ferramentas de grooming premium">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/interior-1.png" alt="Cliente satisfeito">
+          <img src="images/gallery-5.jpg" alt="Cliente satisfeito">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/interior-2.png" alt="Resultado do corte clássico">
+          <img src="images/services-classic-haircut.jpg" alt="Resultado do corte clássico">
         </div>
       </div>
     </div>
@@ -750,7 +743,7 @@
     <div class="container">
       <div class="about-content">
         <div class="about-image fade-in">
-          <img src="images/interior-4.png" alt="Atmosfera da barbearia">
+          <img src="images/hero-banner.jpg" alt="Atmosfera da barbearia">
         </div>
         <div class="about-text fade-in">
           <div class="section-title" style="text-align:left;margin-bottom:24px;">
@@ -841,8 +834,9 @@
       <div class="contact-content">
         <div class="contact-info fade-in">
           <h3>Visite-nos</h3>
-          <p>R. António Andrade 1152<br>Charneca de Caparica</p>
-          <p><a href="tel:+351211508434">21 150 8434</a></p>
+          <p>Rua das Precious Cuts, 123<br>Centro, Lisboa 1000-000</p>
+          <p><a href="tel:+351912345678">+351 912 345 678</a></p>
+          <p><a href="mailto:ola@barbeariadourou.pt">ola@barbeariadourou.pt</a></p>
 
           <div class="contact-hours">
             <h4>Horário de Funcionamento</h4>
@@ -852,7 +846,7 @@
           </div>
 
           <h3>Siga-nos</h3>
-          <p><a href="https://www.instagram.com/barbeariadouro/" target="_blank">Instagram</a> · <a href="https://www.facebook.com/barbeariadouro/" target="_blank">Facebook</a></p>
+          <p><a href="#">Instagram</a> · <a href="#">Facebook</a> · <a href="#">WhatsApp</a></p>
         </div>
 
         <form class="contact-form fade-in" id="contactForm" onsubmit="handleContactSubmit(event)">
@@ -921,10 +915,9 @@
         <div>
           <h4>Contacto</h4>
           <ul>
-            <li><a href="tel:+351211508434">21 150 8434</a></li>
-            <li><a href="https://www.facebook.com/barbeariadouro/" target="_blank">Facebook</a></li>
-            <li><a href="https://www.instagram.com/barbeariadouro/" target="_blank">Instagram</a></li>
-            <li><a href="#contact">R. António Andrade 1152, Charneca de Caparica</a></li>
+            <li><a href="tel:+351912345678">+351 912 345 678</a></li>
+            <li><a href="mailto:ola@barbeariadourou.pt">ola@barbeariadourou.pt</a></li>
+            <li><a href="#contact">Rua das Precious Cuts, 123</a></li>
           </ul>
         </div>
       </div>
