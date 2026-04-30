@@ -22,8 +22,8 @@ const DATA_FILE = path.join(__dirname, 'bookings.json');
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
 const ADMIN_PASSWORD = 'luis123';
 
-// Default SMS template - managed service, not editable via UI
-const DEFAULT_SMS_TEMPLATE = 'Olá! Vimos que nos ligou. Pode marcar o seu corte diretamente no nosso site: https://barbearia-douro.onrender.com';
+// FIXED SMS template - managed service, not editable
+const SMS_TEMPLATE = 'Olá! Vimos que nos ligou. Pode marcar o seu corte diretamente no nosso site: https://barbearia-douro.onrender.com';
 
 // Middleware
 app.use(cors());
@@ -90,7 +90,6 @@ async function sendSms(to, message) {
   }
 
   try {
-    // For Alphanumeric Sender ID, use messagingServiceSid or From
     const from = process.env.TWILIO_FROM_NUMBER || 'BDOURO';
     
     const result = await twilioClient.messages.create({
@@ -289,9 +288,9 @@ app.delete('/api/appointments/:id', verifyToken, (req, res) => {
   }
 });
 
-// ============ SMS / Missed Call Routes ============
+// ============ SMS / Messages Routes ============
 
-// Get messages history
+// Get messages history (admin only)
 app.get('/api/messages', verifyToken, (req, res) => {
   try {
     const messages = loadMessages();
@@ -300,6 +299,14 @@ app.get('/api/messages', verifyToken, (req, res) => {
     console.error('Error loading messages:', error);
     res.status(500).json({ error: 'Erro ao carregar mensagens' });
   }
+});
+
+// Get Twilio status (admin only)
+app.get('/api/twilio/status', verifyToken, (req, res) => {
+  res.json({ 
+    configured: !!twilioClient,
+    template: SMS_TEMPLATE
+  });
 });
 
 // Missed call endpoint - triggers SMS auto-reply (no auth for MacroDroid)
@@ -317,16 +324,15 @@ app.post('/api/missed-call', async (req, res) => {
     id: messages.length > 0 ? Math.max(...messages.map(m => m.id)) + 1 : 1,
     phone,
     callerName: callerName || 'Unknown',
-    template: DEFAULT_SMS_TEMPLATE,
+    timestamp: new Date().toISOString(),
     smsSent: false,
     smsSid: null,
     smsStatus: null,
-    smsError: null,
-    timestamp: new Date().toISOString()
+    smsError: null
   };
   
-  // Send SMS using the managed template
-  const result = await sendSms(phone, DEFAULT_SMS_TEMPLATE);
+  // Send SMS using the FIXED managed template
+  const result = await sendSms(phone, SMS_TEMPLATE);
   
   msgRecord.smsSent = result.success;
   msgRecord.smsSid = result.sid || null;
