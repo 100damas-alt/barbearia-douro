@@ -4,18 +4,33 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
+// Twilio SDK - installed via npm install twilio
+let twilioClient = null;
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    const twilio = require('twilio');
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    console.log('Twilio client initialized');
+  }
+} catch (e) {
+  console.log('Twilio not available:', e.message);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'bookings.json');
-const ADMIN_PASSWORD = 'luis123'; // Admin password
+const MESSAGES_FILE = path.join(__dirname, 'messages.json');
+const ADMIN_PASSWORD = 'luis123';
+
+// Default SMS template - managed service, not editable via UI
+const DEFAULT_SMS_TEMPLATE = 'Olá! Vimos que nos ligou. Pode marcar o seu corte diretamente no nosso site: https://barbearia-douro.onrender.com';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Simple session token (in production, use proper JWT or session management)
+// Simple session token
 let adminToken = null;
-const TOKEN_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 // Generate a simple token
 function generateToken() {
@@ -25,30 +40,17 @@ function generateToken() {
 // Verify admin token
 function verifyToken(req, res, next) {
   const token = req.headers['x-admin-token'];
-  
   if (!token || token !== adminToken) {
     return res.status(401).json({ error: 'Não autorizado. Faça login primeiro.' });
   }
-  
   next();
 }
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Fallback for SPA routing if needed (though not really needed for this simple project)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
+// ============ Data Storage ============
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Barbearia D'Ouro server running on port ${PORT}`);
-  console.log(`Website: http://localhost:${PORT}/`);
-  console.log(`Admin dashboard: http://localhost:${PORT}/admin.html`);
-  console.log(`Admin password: luis123`);
-});
-
-// Initialize data file
 function loadBookings() {
   try {
     if (fs.existsSync(DATA_FILE)) {
@@ -64,11 +66,52 @@ function saveBookings(bookings) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
 }
 
-// Business hours configuration
+function loadMessages() {
+  try {
+    if (fs.existsSync(MESSAGES_FILE)) {
+      return JSON.parse(fs.readFileSync(MESSAGES_FILE, 'utf8'));
+    }
+  } catch (error) {
+    console.error('Error loading messages:', error);
+  }
+  return [];
+}
+
+function saveMessages(messages) {
+  fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages, null, 2));
+}
+
+// ============ Twilio SMS Helper ============
+
+async function sendSms(to, message) {
+  if (!twilioClient) {
+    console.log('Twilio not configured. SMS would be sent to:', to);
+    return { success: false, error: 'Twilio not configured' };
+  }
+
+  try {
+    // For Alphanumeric Sender ID, use messagingServiceSid or From
+    const from = process.env.TWILIO_FROM_NUMBER || 'BDOURO';
+    
+    const result = await twilioClient.messages.create({
+      body: message,
+      from: from,
+      to: to
+    });
+    
+    return { success: true, sid: result.sid, status: result.status };
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// ============ Business Hours ============
+
 const BUSINESS_HOURS = {
   mon_fri: { morning: '09:00', lunch_start: '13:00', lunch_end: '15:00', evening: '19:00' },
   saturday: { morning: '08:00', evening: '14:00' },
-  sunday: null // Closed
+  sunday: null
 };
 
 const SERVICES = {
@@ -78,27 +121,23 @@ const SERVICES = {
   'kids-haircut': { name: 'Corte Infantil', price: 18, duration: 30 }
 };
 
-// Check if a time slot is available (implements smart booking)
 function isSlotAvailable(date, time) {
   const dayOfWeek = new Date(date).getDay();
   const timeSlot = time;
   
-  // Check if business is open
   if (dayOfWeek === 0) return { available: false, reason: 'Encerrado aos domingos' };
   
   let validHours;
-  if (dayOfWeek === 6) { // Saturday
+  if (dayOfWeek === 6) {
     validHours = BUSINESS_HOURS.saturday;
-  } else { // Monday-Friday
+  } else {
     validHours = BUSINESS_HOURS.mon_fri;
   }
   
-  // Check morning slot
   if (timeSlot >= validHours.morning && timeSlot < validHours.lunch_start) {
     return { available: true };
   }
   
-  // Check afternoon slot (Mon-Fri only)
   if (dayOfWeek !== 6 && timeSlot >= validHours.lunch_end && timeSlot <= validHours.evening) {
     return { available: true };
   }
@@ -106,13 +145,12 @@ function isSlotAvailable(date, time) {
   return { available: false, reason: 'Fora do horário de funcionamento' };
 }
 
-// Check for existing bookings at the same time (prevent double booking)
 function hasConflictingBooking(date, time) {
   const bookings = loadBookings();
   return bookings.some(b => b.date === date && b.time === time && !b.cancelled);
 }
 
-// API Routes
+// ============ API Routes ============
 
 // Admin login
 app.post('/api/admin/login', (req, res) => {
@@ -120,11 +158,7 @@ app.post('/api/admin/login', (req, res) => {
   
   if (password === ADMIN_PASSWORD) {
     adminToken = generateToken();
-    return res.json({ 
-      success: true, 
-      token: adminToken,
-      message: 'Login realizado com sucesso!'
-    });
+    return res.json({ success: true, token: adminToken, message: 'Login realizado com sucesso!' });
   }
   
   res.status(401).json({ error: 'Palavra-passe incorreta' });
@@ -142,7 +176,7 @@ app.get('/api/admin/status', (req, res) => {
   res.json({ authenticated: token === adminToken && adminToken !== null });
 });
 
-// Get all appointments (for admin - requires auth)
+// Get all appointments
 app.get('/api/appointments', verifyToken, (req, res) => {
   try {
     const bookings = loadBookings();
@@ -155,10 +189,10 @@ app.get('/api/appointments', verifyToken, (req, res) => {
   }
 });
 
-// Get available slots for a specific date (public - no auth needed)
+// Get available slots
 app.get('/api/slots/:date', (req, res) => {
   const { date } = req.params;
-  const dayOfWeek = new Date(date).getUTCDay(); // Use UTC to avoid timezone issues
+  const dayOfWeek = new Date(date).getUTCDay();
   
   let timeSlots = [];
   
@@ -167,7 +201,6 @@ app.get('/api/slots/:date', (req, res) => {
   }
   
   if (dayOfWeek === 6) {
-    // Saturday: 08:00-14:00
     for (let h = 8; h < 14; h++) {
       const time = `${h.toString().padStart(2, '0')}:00`;
       const timeHalf = `${h.toString().padStart(2, '0')}:30`;
@@ -175,7 +208,6 @@ app.get('/api/slots/:date', (req, res) => {
       timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf) });
     }
   } else {
-    // Mon-Fri: 09:00-13:00 and 15:00-19:00
     for (let h = 9; h < 13; h++) {
       const time = `${h.toString().padStart(2, '0')}:00`;
       const timeHalf = `${h.toString().padStart(2, '0')}:30`;
@@ -193,44 +225,32 @@ app.get('/api/slots/:date', (req, res) => {
   res.json({ slots: timeSlots });
 });
 
-// Create new appointment (public - no auth needed)
+// Create new appointment
 app.post('/api/appointments', (req, res) => {
   const { name, email, phone, service, date, time, notes } = req.body;
   
-  // Validate required fields
   if (!name || !email || !phone || !service || !date || !time) {
     return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios' });
   }
   
-  // Validate service
   if (!SERVICES[service]) {
     return res.status(400).json({ error: 'Serviço inválido' });
   }
   
-  // Check slot availability (business hours)
   const slotCheck = isSlotAvailable(date, time);
   if (!slotCheck.available) {
     return res.status(400).json({ error: slotCheck.reason });
   }
   
-  // Check for double booking
   if (hasConflictingBooking(date, time)) {
-    return res.status(400).json({ 
-      error: 'Este horário já está reservado. Por favor, escolha outro horário.',
-      conflict: true 
-    });
+    return res.status(400).json({ error: 'Este horário já está reservado. Por favor, escolha outro horário.', conflict: true });
   }
   
   try {
     const bookings = loadBookings();
     const newBooking = {
       id: bookings.length > 0 ? Math.max(...bookings.map(b => b.id)) + 1 : 1,
-      name,
-      email,
-      phone,
-      service,
-      date,
-      time,
+      name, email, phone, service, date, time,
       notes: notes || '',
       created_at: new Date().toISOString(),
       cancelled: false
@@ -239,18 +259,14 @@ app.post('/api/appointments', (req, res) => {
     bookings.push(newBooking);
     saveBookings(bookings);
     
-    res.json({ 
-      success: true, 
-      id: newBooking.id,
-      message: 'Marcação confirmada com sucesso!'
-    });
+    res.json({ success: true, id: newBooking.id, message: 'Marcação confirmada com sucesso!' });
   } catch (error) {
     console.error('Error creating appointment:', error);
     res.status(500).json({ error: 'Erro ao criar marcação' });
   }
 });
 
-// Delete appointment (admin - requires auth)
+// Delete appointment
 app.delete('/api/appointments/:id', verifyToken, (req, res) => {
   const { id } = req.params;
   
@@ -273,7 +289,62 @@ app.delete('/api/appointments/:id', verifyToken, (req, res) => {
   }
 });
 
-// Serve admin dashboard (requires auth)
+// ============ SMS / Missed Call Routes ============
+
+// Get messages history
+app.get('/api/messages', verifyToken, (req, res) => {
+  try {
+    const messages = loadMessages();
+    res.json(messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    res.status(500).json({ error: 'Erro ao carregar mensagens' });
+  }
+});
+
+// Missed call endpoint - triggers SMS auto-reply (no auth for MacroDroid)
+app.post('/api/missed-call', async (req, res) => {
+  const { phone, callerName } = req.body;
+  
+  if (!phone) {
+    return res.status(400).json({ error: 'Número de telefone é obrigatório' });
+  }
+  
+  const messages = loadMessages();
+  
+  // Log the missed call
+  const msgRecord = {
+    id: messages.length > 0 ? Math.max(...messages.map(m => m.id)) + 1 : 1,
+    phone,
+    callerName: callerName || 'Unknown',
+    template: DEFAULT_SMS_TEMPLATE,
+    smsSent: false,
+    smsSid: null,
+    smsStatus: null,
+    smsError: null,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Send SMS using the managed template
+  const result = await sendSms(phone, DEFAULT_SMS_TEMPLATE);
+  
+  msgRecord.smsSent = result.success;
+  msgRecord.smsSid = result.sid || null;
+  msgRecord.smsStatus = result.status || null;
+  msgRecord.smsError = result.error || null;
+  
+  messages.push(msgRecord);
+  saveMessages(messages);
+  
+  res.json({ 
+    success: true, 
+    smsSent: msgRecord.smsSent,
+    message: msgRecord.smsSent ? 'SMS enviado com sucesso' : 'Erro ao enviar SMS'
+  });
+});
+
+// ============ Admin Dashboard Routes ============
+
 app.get('/admin.html', (req, res) => {
   const token = req.headers['x-admin-token'];
   if (token !== adminToken) {
@@ -290,9 +361,15 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
+// Catch-all route
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Barbearia D'Ouro server running on port ${PORT}`);
   console.log(`Website: http://localhost:${PORT}/`);
   console.log(`Admin dashboard: http://localhost:${PORT}/admin.html`);
   console.log(`Admin password: luis123`);
+  console.log(`Twilio configured: ${twilioClient ? 'Yes' : 'No (set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN)'}`);
 });
