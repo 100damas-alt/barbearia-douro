@@ -25,6 +25,16 @@ const ADMIN_PASSWORD = 'luis123';
 // FIXED SMS template - managed service, not editable
 const SMS_TEMPLATE = 'Olá! Vimos que nos ligou. Pode marcar o seu corte diretamente no nosso site: https://barbearia-douro.onrender.com';
 
+// Barbers list
+const BARBERS = [
+  { id: 'miranda', name: 'Miranda' },
+  { id: 'ricardo', name: 'Ricardo' },
+  { id: 'duarte', name: 'Duarte' },
+  { id: 'eduardo', name: 'Eduardo' },
+  { id: 'joao', name: 'João' },
+  { id: 'alex', name: 'Alex' }
+];
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -144,9 +154,12 @@ function isSlotAvailable(date, time) {
   return { available: false, reason: 'Fora do horário de funcionamento' };
 }
 
-function hasConflictingBooking(date, time) {
+// Check for conflicting booking - now checks by barber
+function hasConflictingBooking(date, time, barber) {
   const bookings = loadBookings();
-  return bookings.some(b => b.date === date && b.time === time && !b.cancelled);
+  return bookings.some(b => 
+    b.date === date && b.time === time && b.barber === barber && !b.cancelled
+  );
 }
 
 // ============ API Routes ============
@@ -175,6 +188,11 @@ app.get('/api/admin/status', (req, res) => {
   res.json({ authenticated: token === adminToken && adminToken !== null });
 });
 
+// Get barbers list
+app.get('/api/barbers', (req, res) => {
+  res.json(BARBERS);
+});
+
 // Get all appointments
 app.get('/api/appointments', verifyToken, (req, res) => {
   try {
@@ -188,9 +206,10 @@ app.get('/api/appointments', verifyToken, (req, res) => {
   }
 });
 
-// Get available slots
+// Get available slots - updated to accept barber parameter
 app.get('/api/slots/:date', (req, res) => {
   const { date } = req.params;
+  const { barber } = req.query; // Optional barber filter
   const dayOfWeek = new Date(date).getUTCDay();
   
   let timeSlots = [];
@@ -203,30 +222,33 @@ app.get('/api/slots/:date', (req, res) => {
     for (let h = 8; h < 14; h++) {
       const time = `${h.toString().padStart(2, '0')}:00`;
       const timeHalf = `${h.toString().padStart(2, '0')}:30`;
-      timeSlots.push({ time, available: !hasConflictingBooking(date, time) });
-      timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf) });
+      const barberCheck = barber || null;
+      timeSlots.push({ time, available: !hasConflictingBooking(date, time, barberCheck) });
+      timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf, barberCheck) });
     }
   } else {
     for (let h = 9; h < 13; h++) {
       const time = `${h.toString().padStart(2, '0')}:00`;
       const timeHalf = `${h.toString().padStart(2, '0')}:30`;
-      timeSlots.push({ time, available: !hasConflictingBooking(date, time) });
-      timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf) });
+      const barberCheck = barber || null;
+      timeSlots.push({ time, available: !hasConflictingBooking(date, time, barberCheck) });
+      timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf, barberCheck) });
     }
     for (let h = 15; h < 19; h++) {
       const time = `${h.toString().padStart(2, '0')}:00`;
       const timeHalf = `${h.toString().padStart(2, '0')}:30`;
-      timeSlots.push({ time, available: !hasConflictingBooking(date, time) });
-      timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf) });
+      const barberCheck = barber || null;
+      timeSlots.push({ time, available: !hasConflictingBooking(date, time, barberCheck) });
+      timeSlots.push({ time: timeHalf, available: !hasConflictingBooking(date, timeHalf, barberCheck) });
     }
   }
   
   res.json({ slots: timeSlots });
 });
 
-// Create new appointment
+// Create new appointment - updated to include barber
 app.post('/api/appointments', (req, res) => {
-  const { name, email, phone, service, date, time, notes } = req.body;
+  const { name, email, phone, service, date, time, notes, barber } = req.body;
   
   if (!name || !email || !phone || !service || !date || !time) {
     return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios' });
@@ -236,21 +258,31 @@ app.post('/api/appointments', (req, res) => {
     return res.status(400).json({ error: 'Serviço inválido' });
   }
   
+  // Validate barber if provided
+  const barberId = barber || BARBERS[0].id; // Default to first barber
+  const validBarber = BARBERS.some(b => b.id === barberId);
+  if (!validBarber) {
+    return res.status(400).json({ error: 'Barbeiro inválido' });
+  }
+  
   const slotCheck = isSlotAvailable(date, time);
   if (!slotCheck.available) {
     return res.status(400).json({ error: slotCheck.reason });
   }
   
-  if (hasConflictingBooking(date, time)) {
-    return res.status(400).json({ error: 'Este horário já está reservado. Por favor, escolha outro horário.', conflict: true });
+  if (hasConflictingBooking(date, time, barberId)) {
+    return res.status(400).json({ error: 'Este horário já está reservado para este barbeiro.', conflict: true });
   }
   
   try {
     const bookings = loadBookings();
+    const barberInfo = BARBERS.find(b => b.id === barberId);
     const newBooking = {
       id: bookings.length > 0 ? Math.max(...bookings.map(b => b.id)) + 1 : 1,
       name, email, phone, service, date, time,
       notes: notes || '',
+      barber: barberId,
+      barberName: barberInfo.name,
       created_at: new Date().toISOString(),
       cancelled: false
     };
@@ -377,5 +409,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Website: http://localhost:${PORT}/`);
   console.log(`Admin dashboard: http://localhost:${PORT}/admin.html`);
   console.log(`Admin password: luis123`);
-  console.log(`Twilio configured: ${twilioClient ? 'Yes' : 'No (set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN)'}`);
+  console.log(`Twilio configured: ${twilioClient ? 'Yes' : 'No'}`);
+  console.log(`Barbers: ${BARBERS.map(b => b.name).join(', ')}`);
 });

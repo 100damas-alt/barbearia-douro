@@ -449,6 +449,18 @@
             <option value="kids-haircut">Corte Infantil</option>
           </select>
         </div>
+        <div class="filter-group">
+          <label for="filterBarber">Barbeiro</label>
+          <select id="filterBarber" onchange="filterAppointments()">
+            <option value="">Todos os Barbeiros</option>
+            <option value="miranda">Miranda</option>
+            <option value="ricardo">Ricardo</option>
+            <option value="duarte">Duarte</option>
+            <option value="eduardo">Eduardo</option>
+            <option value="joao">João</option>
+            <option value="alex">Alex</option>
+          </select>
+        </div>
         <button class="btn btn-secondary" onclick="clearFilters()">Limpar Filtros</button>
         <button class="btn btn-primary" onclick="loadAppointments()">Atualizar</button>
       </div>
@@ -463,6 +475,7 @@
               <th>Email</th>
               <th>Telefone</th>
               <th>Serviço</th>
+              <th>Barbeiro</th>
               <th>Data</th>
               <th>Hora</th>
               <th>Notas</th>
@@ -471,7 +484,7 @@
           </thead>
           <tbody id="appointmentsTable">
             <tr>
-              <td colspan="9" class="loading">A carregar marcações</td>
+              <td colspan="10" class="loading">A carregar marcações</td>
             </tr>
           </tbody>
         </table>
@@ -562,7 +575,7 @@
 
     async function loadAppointments() {
       const tbody = document.getElementById('appointmentsTable');
-      tbody.innerHTML = '<tr><td colspan="9" class="loading">A carregar marcações</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="loading">A carregar marcações</td></tr>';
 
       try {
         const response = await fetch(`${API_BASE}/api/appointments`, {
@@ -617,6 +630,7 @@
             <td>${escapeHtml(apt.email)}</td>
             <td>${escapeHtml(apt.phone)}</td>
             <td><span class="badge badge-confirmed">${SERVICE_NAMES[apt.service] || apt.service}</span></td>
+            <td>${apt.barberName || apt.barber || '—'}</td>
             <td>${formattedDate}</td>
             <td>${apt.time}</td>
             <td>${escapeHtml(apt.notes || '—')}</td>
@@ -631,6 +645,7 @@
     function filterAppointments() {
       const dateFilter = document.getElementById('filterDate').value;
       const serviceFilter = document.getElementById('filterService').value;
+      const barberFilter = document.getElementById('filterBarber').value;
 
       let filtered = allAppointments;
 
@@ -642,12 +657,17 @@
         filtered = filtered.filter(a => a.service === serviceFilter);
       }
 
+      if (barberFilter) {
+        filtered = filtered.filter(a => a.barber === barberFilter);
+      }
+
       renderAppointments(filtered);
     }
 
     function clearFilters() {
       document.getElementById('filterDate').value = '';
       document.getElementById('filterService').value = '';
+      document.getElementById('filterBarber').value = '';
       renderAppointments(allAppointments);
     }
 

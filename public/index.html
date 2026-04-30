@@ -361,6 +361,61 @@
     .booking-cta h2 { color: var(--warm-white); margin-bottom: 16px; }
     .booking-cta p { color: var(--champagne); font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; margin-bottom: 32px; }
 
+    /* Testimonials Section */
+    .testimonials {
+      background: var(--charcoal);
+      padding: 80px 0;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 992px) {
+      .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .testimonials-grid { grid-template-columns: 1fr; }
+    }
+
+    .testimonial-card {
+      background: var(--black);
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 32px;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--champagne);
+    }
+
+    .stars {
+      color: var(--champagne);
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .testimonial-text {
+      color: #ccc;
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      color: var(--champagne);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
     /* Contact Section */
     .contact { background: var(--cream); }
 
@@ -727,6 +782,48 @@
     </div>
   </section>
 
+  <!-- Testimonials Section -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="section-title">
+        <p>Depoimentos</p>
+        <h2>O que dizem os nossos clientes</h2>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"Uma equipa e ambiente fantástico. O João foi o profissional que me cortou o cabelo e aparou a barba. Simpático e cordial. Muito profissional."</p>
+          <div class="testimonial-author">— Júlio Coelho</div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"O João B. foi de um profissionalismo extraordinário. Não só percebeu o que eu queria como teve ideias. Fiquei extremamente contente com o resultado final."</p>
+          <div class="testimonial-author">— Nuno Vaz</div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"Serviço de excelência, atendimento impecável e sempre com boa disposição, espaço muito agradável e limpo e o café é por conta da casa 😉"</p>
+          <div class="testimonial-author">— Gonçalo Rocha</div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"Agradeço ao Tiago e a todo o resto do staff pela magnífica experiência que aqui passei. O corte surpreendeu-me muito pela positiva."</p>
+          <div class="testimonial-author">— Filipe H.</div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"Melhor atendimento e excelência no serviço. Espaço agradável e requintado."</p>
+          <div class="testimonial-author">— Ricardo Costa</div>
+        </div>
+        <div class="testimonial-card fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-text">"Um lugar 5 estrelas!!! Atendimento e serviço de muita qualidade."</p>
+          <div class="testimonial-author">— Mikhail Costa</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Contact Section -->
   <section class="contact" id="contact">
     <div class="container">
@@ -886,6 +983,14 @@
           </div>
 
           <div class="form-group">
+            <label for="bookBarber">Barbeiro *</label>
+            <select id="bookBarber" name="barber" required>
+              <option value="">Carregando...</option>
+            </select>
+            <span class="form-error">Por favor, selecione um barbeiro</span>
+          </div>
+
+          <div class="form-group">
             <label for="bookNotes">Pedidos Especiais</label>
             <textarea id="bookNotes" name="notes" placeholder="Algum pedido especial?" maxlength="500"></textarea>
           </div>
@@ -920,11 +1025,33 @@
       document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
     }
 
+    // Load barbers list
+    async function loadBarbers() {
+      try {
+        const response = await fetch(`${API_BASE}/api/barbers`);
+        const barbers = await response.json();
+        
+        const barberSelect = document.getElementById('bookBarber');
+        barberSelect.innerHTML = '<option value="">Selecione um barbeiro</option>';
+        
+        barbers.forEach(barber => {
+          const option = document.createElement('option');
+          option.value = barber.id;
+          option.textContent = barber.name;
+          barberSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading barbers:', error);
+        document.getElementById('bookBarber').innerHTML = '<option value="">Erro ao carregar</option>';
+      }
+    }
+
     // Modal functions
     function openModal() {
       document.getElementById('bookingModal').classList.add('active');
       document.body.style.overflow = 'hidden';
       setMinDate();
+      loadBarbers();
       resetBookingForm();
     }
 
@@ -963,7 +1090,9 @@
     async function loadAvailableSlots() {
       const dateInput = document.getElementById('bookDate');
       const timeSelect = document.getElementById('bookTime');
+      const barberSelect = document.getElementById('bookBarber');
       const date = dateInput.value;
+      const barber = barberSelect.value;
       
       if (!date) {
         timeSelect.innerHTML = '<option value="">Selecione primeiro uma data</option>';
@@ -971,7 +1100,8 @@
       }
       
       try {
-        const response = await fetch(`${API_BASE}/api/slots/${date}`);
+        const url = barber ? `${API_BASE}/api/slots/${date}?barber=${barber}` : `${API_BASE}/api/slots/${date}`;
+        const response = await fetch(url);
         const data = await response.json();
         
         timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
@@ -1048,6 +1178,9 @@
       const time = document.getElementById('bookTime');
       if (!time.value) { time.closest('.form-group').classList.add('error'); valid = false; }
 
+      const barber = document.getElementById('bookBarber');
+      if (!barber.value) { barber.closest('.form-group').classList.add('error'); valid = false; }
+
       if (!valid) return;
 
       // Show loading
@@ -1064,7 +1197,8 @@
             service: service.value,
             date: date.value,
             time: time.value,
-            notes: document.getElementById('bookNotes').value
+            notes: document.getElementById('bookNotes').value,
+            barber: barber.value
           })
         });
 
