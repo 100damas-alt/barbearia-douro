@@ -1229,7 +1229,6 @@
 
   <script>
     const API_BASE = window.location.origin;
-
     // Navigation scroll effect
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => {
@@ -1244,11 +1243,9 @@
 
     // Booking Steps Navigation
     let currentStep = 1;
-    let selectedDate = null;
     let calendarViewDate = new Date();
 
     function goToStep(step) {
-      // Validation before moving forward
       if (step > currentStep) {
         if (currentStep === 1) {
           if (!document.getElementById('bookBarber').value) {
@@ -1273,11 +1270,9 @@
         }
       }
 
-      // Transition steps
       document.querySelectorAll('.booking-step-content').forEach(el => el.classList.remove('active'));
       document.getElementById(`step${step}`).classList.add('active');
       
-      // Update dots
       document.querySelectorAll('.step-dot').forEach((dot, idx) => {
         const dotNum = idx + 1;
         dot.classList.toggle('active', dotNum === step);
@@ -1295,15 +1290,14 @@
       const year = calendarViewDate.getFullYear();
       const month = calendarViewDate.getMonth();
       
-      const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = new Date(year, month, 1).getDay();
       
       const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
       monthLabel.textContent = `${monthNames[month]} ${year}`;
       
       grid.innerHTML = '';
       
-      // Weekdays headers
       ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].forEach(d => {
         const el = document.createElement('div');
         el.className = 'calendar-weekday';
@@ -1311,7 +1305,6 @@
         grid.appendChild(el);
       });
       
-      // Empty slots for first week
       for (let i = 0; i < firstDay; i++) {
         grid.appendChild(document.createElement('div'));
       }
@@ -1327,9 +1320,7 @@
         el.className = 'calendar-day';
         el.textContent = day;
         
-        if (dateObj < today) {
-          el.classList.add('disabled');
-        } else if (dateObj.getDay() === 0) { // Sunday
+        if (dateObj < today || dateObj.getDay() === 0) {
           el.classList.add('disabled');
         } else {
           if (dateStr === document.getElementById('bookDate').value) {
@@ -1353,7 +1344,7 @@
       document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
       element.classList.add('selected');
       document.getElementById('bookDate').value = dateStr;
-      document.getElementById('bookTime').value = ''; // Reset time
+      document.getElementById('bookTime').value = ''; 
       loadAvailableSlots();
     }
 
@@ -1362,25 +1353,20 @@
       try {
         const response = await fetch(`${API_BASE}/api/barbers`);
         const barbers = await response.json();
-        
         const barberGrid = document.getElementById('barberGrid');
         barberGrid.innerHTML = '';
         
         barbers.forEach(barber => {
           const card = document.createElement('div');
           card.className = 'barber-card';
-          card.innerHTML = `
-            <span>${barber.name}</span>
-          `;
+          card.innerHTML = `<span>${barber.name}</span>`;
           card.onclick = () => {
             document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             document.getElementById('bookBarber').value = barber.id;
-            
-            // If date already selected, refresh slots
             if (document.getElementById('bookDate').value) {
               loadAvailableSlots();
-              renderCalendar(); // Re-render to check holiday status on calendar
+              renderCalendar();
             }
           };
           barberGrid.appendChild(card);
@@ -1397,14 +1383,12 @@
       const barber = document.getElementById('bookBarber').value;
       
       if (!date) return;
-      
       timeGrid.innerHTML = '<p style="color:#666; font-size:14px;">A carregar horários...</p>';
       
       try {
         const url = `${API_BASE}/api/slots/${date}?barber=${barber}`;
         const response = await fetch(url);
         const data = await response.json();
-        
         timeGrid.innerHTML = '';
         
         if (data.message) {
@@ -1416,16 +1400,14 @@
             const btn = document.createElement('div');
             btn.className = `time-slot ${slot.available ? '' : 'unavailable'}`;
             btn.textContent = slot.time;
-            
             if (slot.available) {
               btn.onclick = (e) => {
-                e.stopPropagation(); // Prevent bubble
+                e.stopPropagation();
                 document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                 btn.classList.add('selected');
                 document.getElementById('bookTime').value = slot.time;
               };
             }
-            
             timeGrid.appendChild(btn);
           });
         }
@@ -1439,7 +1421,6 @@
     function openModal() {
       document.getElementById('bookingModal').classList.add('active');
       document.body.style.overflow = 'hidden';
-      setMinDate();
       loadBarbers();
       resetBookingForm();
     }
@@ -1449,133 +1430,21 @@
       document.body.style.overflow = '';
     }
 
-    // Close modal on overlay click
-    document.getElementById('bookingModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('bookingModal')) closeModal();
-    });
-
-    // Close modal on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
-
-    // Set minimum date to today
-    function setMinDate() {
-      const today = new Date().toISOString().split('T')[0];
-      const maxDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const dateInput = document.getElementById('bookDate');
-      dateInput.min = today;
-      dateInput.max = maxDate;
-      dateInput.value = '';
-
-      const contactDate = document.getElementById('contactDate');
-      if (contactDate) {
-        contactDate.min = today;
-        contactDate.max = maxDate;
-      }
-    }
-
-    // Load available slots when date is selected
-    async function loadAvailableSlots() {
-      const dateInput = document.getElementById('bookDate');
-      const timeSelect = document.getElementById('bookTime');
-      const barberSelect = document.getElementById('bookBarber');
-      const date = dateInput.value;
-      const barber = barberSelect.value;
-      
-      if (!date) {
-        timeSelect.innerHTML = '<option value="">Selecione primeiro uma data</option>';
-        return;
-      }
-      
-      try {
-        const url = barber ? `${API_BASE}/api/slots/${date}?barber=${barber}` : `${API_BASE}/api/slots/${date}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
-        
-        if (data.message) {
-          // Business closed on this day
-          const option = document.createElement('option');
-          option.value = '';
-          option.textContent = data.message;
-          option.disabled = true;
-          timeSelect.appendChild(option);
-          timeSelect.disabled = true;
-        } else {
-          timeSelect.disabled = false;
-          data.slots.forEach(slot => {
-            const option = document.createElement('option');
-            option.value = slot.time;
-            option.textContent = slot.time;
-            if (!slot.available) {
-              option.textContent += ' (Ocupado)';
-              option.disabled = true;
-              option.classList.add('unavailable');
-            }
-            timeSelect.appendChild(option);
-          });
-        }
-      } catch (error) {
-        console.error('Error loading slots:', error);
-        timeSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
-      }
-    }
-
-    // Reset booking form
     function resetBookingForm() {
-      const form = document.getElementById('bookingForm');
-      form.classList.remove('hidden');
+      document.getElementById('bookingForm').classList.remove('hidden');
       document.getElementById('bookingSuccess').classList.remove('active');
-      form.querySelectorAll('.form-group').forEach(g => g.classList.remove('error'));
       document.getElementById('bookBtn').classList.remove('loading');
-      form.querySelector('form').reset();
-      
-      // Reset steps
+      document.querySelector('#bookingForm form').reset();
       goToStep(1);
-      
-      // Reset selections
       document.getElementById('bookBarber').value = '';
+      document.getElementById('bookDate').value = '';
       document.getElementById('bookTime').value = '';
-      document.getElementById('timeGrid').innerHTML = '<p style="color:#666; font-size:14px;">Selecione primeiro uma data</p>';
+      document.getElementById('timeGrid').innerHTML = '<p style="color:#666; font-size:14px;">Selecione primeiro uma data no calendário</p>';
     }
 
-    // Handle booking submission
     async function handleBookingSubmit(e) {
       e.preventDefault();
-      const form = e.target;
       const btn = document.getElementById('bookBtn');
-
-      // Clear previous errors
-      form.querySelectorAll('.form-group').forEach(g => g.classList.remove('error'));
-
-      // Validate
-      let valid = true;
-      const name = document.getElementById('bookName');
-      if (name.value.trim().length < 2) { name.closest('.form-group').classList.add('error'); valid = false; }
-
-      const email = document.getElementById('bookEmail');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) { email.closest('.form-group').classList.add('error'); valid = false; }
-
-      const phone = document.getElementById('bookPhone');
-      if (!/\+?[0-9\s]{9,}/.test(phone.value)) { phone.closest('.form-group').classList.add('error'); valid = false; }
-
-      const service = document.getElementById('bookService');
-      if (!service.value) { service.closest('.form-group').classList.add('error'); valid = false; }
-
-      const date = document.getElementById('bookDate');
-      if (!date.value) { date.closest('.form-group').classList.add('error'); valid = false; }
-
-      const time = document.getElementById('bookTime');
-      if (!time.value) { time.closest('.form-group').classList.add('error'); valid = false; }
-
-      const barber = document.getElementById('bookBarber');
-      if (!barber.value) { barber.closest('.form-group').classList.add('error'); valid = false; }
-
-      if (!valid) return;
-
-      // Show loading
       btn.classList.add('loading');
 
       try {
@@ -1583,19 +1452,18 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: name.value,
-            email: email.value,
-            phone: phone.value,
-            service: service.value,
-            date: date.value,
-            time: time.value,
+            name: document.getElementById('bookName').value,
+            email: document.getElementById('bookEmail').value,
+            phone: document.getElementById('bookPhone').value,
+            service: document.getElementById('bookService').value,
+            date: document.getElementById('bookDate').value,
+            time: document.getElementById('bookTime').value,
             notes: document.getElementById('bookNotes').value,
-            barber: barber.value
+            barber: document.getElementById('bookBarber').value
           })
         });
 
         const result = await response.json();
-
         if (!response.ok) {
           alert(result.error || 'Erro ao criar marcação');
           btn.classList.remove('loading');
@@ -1603,47 +1471,46 @@
         }
 
         const details = document.getElementById('bookingDetails');
+        const service = document.getElementById('bookService');
         const serviceName = service.options[service.selectedIndex].text.split(' — ')[0];
         details.innerHTML = `
           <p><strong>Serviço:</strong> ${serviceName}</p>
-          <p><strong>Data:</strong> ${new Date(date.value + 'T00:00:00').toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-          <p><strong>Hora:</strong> ${time.value}</p>
-          <p><strong>Nome:</strong> ${name.value}</p>
+          <p><strong>Data:</strong> ${new Date(document.getElementById('bookDate').value + 'T00:00:00').toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p><strong>Hora:</strong> ${document.getElementById('bookTime').value}</p>
+          <p><strong>Nome:</strong> ${document.getElementById('bookName').value}</p>
         `;
 
         document.getElementById('bookingForm').classList.add('hidden');
         document.getElementById('bookingSuccess').classList.add('active');
         btn.classList.remove('loading');
-        
-        // Refresh slots
-        loadAvailableSlots();
       } catch (error) {
         console.error('Booking error:', error);
-        alert('Erro ao criar marcação. Por favor, tente novamente.');
+        alert('Erro ao criar marcação.');
         btn.classList.remove('loading');
       }
     }
 
-    // Handle contact form
     function handleContactSubmit(e) {
       e.preventDefault();
       alert('Obrigado! Entraremos em contacto em breve.');
       e.target.reset();
     }
 
-    // Scroll animations
+    document.getElementById('bookingModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('bookingModal')) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
+        if (entry.isIntersecting) entry.target.classList.add('visible');
       });
     }, { threshold: 0.1 });
-
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-    // Initialize
-    setMinDate();
-  </script>
+    </script>
 </body>
 </html>
