@@ -36,14 +36,15 @@ function loadBarbers() {
   } catch (error) {
     console.error('Error loading barbers:', error);
   }
-  return [
-    { id: 'miranda', name: 'Miranda', active: true },
-    { id: 'ricardo', name: 'Ricardo', active: true },
-    { id: 'duarte', name: 'Duarte', active: true },
-    { id: 'eduardo', name: 'Eduardo', active: true },
-    { id: 'joao', name: 'João', active: true },
-    { id: 'alex', name: 'Alex', active: true }
+  const defaultBarbers = [
+    { id: 'miranda', name: 'Miranda', active: true, holidays: [] },
+    { id: 'ricardo', name: 'Ricardo', active: true, holidays: [] },
+    { id: 'duarte', name: 'Duarte', active: true, holidays: [] },
+    { id: 'eduardo', name: 'Eduardo', active: true, holidays: [] },
+    { id: 'joao', name: 'João', active: true, holidays: [] },
+    { id: 'alex', name: 'Alex', active: true, holidays: [] }
   ];
+  return defaultBarbers;
 }
 
 function saveBarbers(barbers) {
@@ -214,10 +215,10 @@ app.get('/api/barbers', (req, res) => {
   res.json(barbers.filter(b => b.active));
 });
 
-// Update barber status (admin only)
+// Update barber status or holidays (admin only)
 app.patch('/api/barbers/:id', verifyToken, (req, res) => {
   const { id } = req.params;
-  const { active } = req.body;
+  const { active, holidays } = req.body;
   
   const barbers = loadBarbers();
   const index = barbers.findIndex(b => b.id === id);
@@ -226,7 +227,9 @@ app.patch('/api/barbers/:id', verifyToken, (req, res) => {
     return res.status(404).json({ error: 'Barbeiro não encontrado' });
   }
   
-  barbers[index].active = active;
+  if (active !== undefined) barbers[index].active = active;
+  if (holidays !== undefined) barbers[index].holidays = holidays;
+  
   saveBarbers(barbers);
   
   res.json({ success: true, barber: barbers[index] });
@@ -245,10 +248,30 @@ app.get('/api/appointments', verifyToken, (req, res) => {
   }
 });
 
+function isBarberOnHoliday(barber, date) {
+  if (!barber.holidays || !Array.isArray(barber.holidays)) return false;
+  
+  const checkDate = new Date(date + 'T00:00:00');
+  return barber.holidays.some(h => {
+    const start = new Date(h.start + 'T00:00:00');
+    const end = new Date(h.end + 'T00:00:00');
+    return checkDate >= start && checkDate <= end;
+  });
+}
+
 // Get available slots - updated to accept barber parameter
 app.get('/api/slots/:date', (req, res) => {
   const { date } = req.params;
   const { barber } = req.query; // Optional barber filter
+  
+  const barbers = loadBarbers();
+  if (barber) {
+    const b = barbers.find(x => x.id === barber);
+    if (b && (b.active === false || isBarberOnHoliday(b, date))) {
+      return res.json({ slots: [], message: 'O barbeiro selecionado está de férias ou indisponível nesta data.' });
+    }
+  }
+
   const dayOfWeek = new Date(date).getUTCDay();
   
   let timeSlots = [];

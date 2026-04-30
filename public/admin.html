@@ -532,8 +532,8 @@
             <tr>
               <th>ID</th>
               <th>Nome</th>
-              <th>Estado Atual</th>
-              <th>Ação</th>
+              <th>Estado / Férias</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody id="barbersTable">
@@ -772,40 +772,96 @@
     function renderBarbersAdmin(barbers) {
       const tbody = document.getElementById('barbersTable');
       tbody.innerHTML = barbers.map(barber => {
-        const statusBadge = barber.active 
+        const isActive = barber.active !== false;
+        const statusBadge = isActive 
           ? '<span class="badge badge-active">Ativo</span>' 
-          : '<span class="badge badge-inactive">Em Férias / Ausente</span>';
+          : '<span class="badge badge-inactive">Inativo</span>';
         
-        const actionBtn = barber.active
-          ? `<button class="btn btn-secondary" style="font-size: 11px; padding: 6px 12px;" onclick="toggleBarberStatus('${barber.id}', false)">Colocar de Férias</button>`
-          : `<button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px;" onclick="toggleBarberStatus('${barber.id}', true)">Ativar Barbeiro</button>`;
+        const holidaysInfo = (barber.holidays || []).map(h => 
+          `<div style="font-size: 11px; color: #888;">${h.start} a ${h.end} <button onclick="removeHoliday('${barber.id}', '${h.start}', '${h.end}')" style="background:none; border:none; color:var(--danger); cursor:pointer; padding:0 4px;">&times;</button></div>`
+        ).join('') || '<div style="font-size: 11px; color: #555;">Sem férias agendadas</div>';
+
+        const actionBtns = `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="action-btn ${isActive ? 'delete' : 'confirm'}" style="width:100%" onclick="toggleBarberStatus('${barber.id}', ${!isActive})">
+              ${isActive ? 'Desativar' : 'Ativar'}
+            </button>
+            <div style="background:#222; padding:8px; border-radius:4px; border:1px solid #333;">
+              <p style="font-size:10px; margin-bottom:4px; color:#aaa;">Adicionar Férias:</p>
+              <div style="display:flex; gap:4px;">
+                <input type="date" id="start-${barber.id}" style="font-size:10px; padding:4px; background:#000; border:1px solid #444; color:#fff;">
+                <input type="date" id="end-${barber.id}" style="font-size:10px; padding:4px; background:#000; border:1px solid #444; color:#fff;">
+                <button onclick="addHoliday('${barber.id}')" style="background:var(--dark-gold); border:none; padding:4px 8px; border-radius:2px; font-size:10px; cursor:pointer;">+</button>
+              </div>
+            </div>
+          </div>
+        `;
 
         return `
           <tr>
-            <td>${barber.id}</td>
-            <td><strong>${barber.name}</strong></td>
-            <td>${statusBadge}</td>
-            <td>${actionBtn}</td>
+            <td style="vertical-align:top;">${barber.id}</td>
+            <td style="vertical-align:top;"><strong>${barber.name}</strong></td>
+            <td style="vertical-align:top;">
+              ${statusBadge}
+              <div style="margin-top:12px;">
+                <p style="font-size:10px; text-transform:uppercase; color:#555; margin-bottom:4px;">Períodos de Férias:</p>
+                ${holidaysInfo}
+              </div>
+            </td>
+            <td>${actionBtns}</td>
           </tr>
         `;
       }).join('');
     }
 
+    async function addHoliday(barberId) {
+      const start = document.getElementById(`start-${barberId}`).value;
+      const end = document.getElementById(`end-${barberId}`).value;
+      
+      if (!start || !end) {
+        alert('Por favor, selecione as datas de início e fim.');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/api/barbers`, { headers: getAuthHeaders() });
+      const barbers = await response.json();
+      const barber = barbers.find(b => b.id === barberId);
+      
+      const holidays = barber.holidays || [];
+      holidays.push({ start, end });
+      
+      await updateBarber(barberId, { holidays });
+      loadBarbersAdmin();
+    }
+
+    async function removeHoliday(barberId, start, end) {
+      const response = await fetch(`${API_BASE}/api/barbers`, { headers: getAuthHeaders() });
+      const barbers = await response.json();
+      const barber = barbers.find(b => b.id === barberId);
+      
+      const holidays = (barber.holidays || []).filter(h => h.start !== start || h.end !== end);
+      
+      await updateBarber(barberId, { holidays });
+      loadBarbersAdmin();
+    }
+
     async function toggleBarberStatus(id, newStatus) {
+      await updateBarber(id, { active: newStatus });
+      showToast(`Estado do barbeiro atualizado!`);
+      loadBarbersAdmin();
+    }
+
+    async function updateBarber(id, data) {
       try {
         const response = await fetch(`${API_BASE}/api/barbers/${id}`, {
           method: 'PATCH',
           headers: getAuthHeaders(),
-          body: JSON.stringify({ active: newStatus })
+          body: JSON.stringify(data)
         });
-
-        if (response.ok) {
-          showToast(`Estado do barbeiro atualizado!`);
-          loadBarbersAdmin();
-          // Update the filter dropdown in appointments tab too if needed
-        }
+        return response.ok;
       } catch (error) {
-        showToast('Erro ao atualizar estado', true);
+        showToast('Erro ao atualizar barbeiro', true);
+        return false;
       }
     }
 
