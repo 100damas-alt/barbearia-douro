@@ -199,7 +199,7 @@
       justify-content: center;
       text-align: center;
       position: relative;
-      background: url('images/hero-banner.jpg') center/cover no-repeat;
+      background: url('images/shop-interior-1.png') center/cover no-repeat;
     }
 
     .hero::before {
@@ -346,7 +346,7 @@
     /* Booking CTA Section */
     .booking-cta {
       position: relative;
-      background: url('images/booking-cta.jpg') center/cover no-repeat;
+      background: url('images/shop-interior-3.png') center/cover no-repeat;
       text-align: center;
     }
 
@@ -443,6 +443,7 @@
 
     .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-group label { font-family: 'Montserrat', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--black); font-weight: 600; }
+    .modal-body .form-group label { color: var(--champagne); }
 
     .form-group input, .form-group select, .form-group textarea {
       background: var(--black);
@@ -458,6 +459,12 @@
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       outline: none;
       border-color: var(--dark-gold);
+    }
+
+    /* Date picker visibility fix */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) sepia(100%) saturate(500%) hue-rotate(10deg);
+      cursor: pointer;
     }
 
     .form-group input::placeholder, .form-group textarea::placeholder { color: #666; }
@@ -697,7 +704,7 @@
           </div>
         </div>
         <div class="service-card fade-in">
-          <img src="images/hero-banner.jpg" alt="Pacote Completo">
+          <img src="images/shop-interior-2.png" alt="Pacote Completo">
           <div class="service-card-content">
             <h3>Pacote Completo</h3>
             <p>Serviço completo incluindo corte, barba e tratamento facial.</p>
@@ -717,22 +724,22 @@
       </div>
       <div class="gallery-grid">
         <div class="gallery-item fade-in">
-          <img src="images/gallery-1.jpg" alt="Interior da barbearia">
+          <img src="images/shop-interior-1.png" alt="Interior da barbearia">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/gallery-2.jpg" alt="Estilização de cabelo">
+          <img src="images/shop-interior-2.png" alt="Estilização de cabelo">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/gallery-3.jpg" alt="Aparar barba">
+          <img src="images/shop-interior-3.png" alt="Aparar barba">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/gallery-4.jpg" alt="Ferramentas de grooming premium">
+          <img src="images/shop-interior-4.png" alt="Ferramentas de grooming premium">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/gallery-5.jpg" alt="Cliente satisfeito">
+          <img src="images/shop-interior-1.png" alt="Cliente satisfeito">
         </div>
         <div class="gallery-item fade-in">
-          <img src="images/services-classic-haircut.jpg" alt="Resultado do corte clássico">
+          <img src="images/shop-interior-2.png" alt="Resultado do corte clássico">
         </div>
       </div>
     </div>
@@ -743,7 +750,7 @@
     <div class="container">
       <div class="about-content">
         <div class="about-image fade-in">
-          <img src="images/hero-banner.jpg" alt="Atmosfera da barbearia">
+          <img src="images/shop-interior-4.png" alt="Atmosfera da barbearia">
         </div>
         <div class="about-text fade-in">
           <div class="section-title" style="text-align:left;margin-bottom:24px;">
