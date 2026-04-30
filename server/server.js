@@ -325,8 +325,8 @@ app.post('/api/appointments', (req, res) => {
   const barberId = barber || (barbers.find(b => b.active) || barbers[0]).id; // Default to first active barber
   const barberInfo = barbers.find(b => b.id === barberId);
   
-  if (!barberInfo || !barberInfo.active) {
-    return res.status(400).json({ error: 'Barbeiro indisponível ou inválido' });
+  if (!barberInfo || !barberInfo.active || isBarberOnHoliday(barberInfo, date)) {
+    return res.status(400).json({ error: 'Barbeiro indisponível nesta data (férias ou inativo)' });
   }
   
   const slotCheck = isSlotAvailable(date, time);
