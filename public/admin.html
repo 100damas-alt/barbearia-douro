@@ -242,13 +242,80 @@
       color: var(--black);
     }
 
-    /* Table */
-    .table-container {
+    /* Schedule Grid */
+    .schedule-container {
       background: var(--charcoal);
       border-radius: 8px;
-      overflow: hidden;
+      overflow-x: auto;
       border: 1px solid #333;
     }
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 80px repeat(6, 1fr);
+      min-width: 1000px;
+    }
+    .schedule-header {
+      background: var(--black);
+      padding: 12px;
+      text-align: center;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      border-bottom: 1px solid #333;
+      border-right: 1px solid #333;
+    }
+    .schedule-time-col {
+      background: var(--black);
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--champagne);
+      border-bottom: 1px solid #222;
+      border-right: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .schedule-cell {
+      padding: 8px;
+      border-bottom: 1px solid #222;
+      border-right: 1px solid #222;
+      min-height: 80px;
+      background: rgba(255,255,255,0.01);
+      transition: background 0.3s;
+    }
+    .schedule-cell:hover { background: rgba(255,255,255,0.03); }
+    .booking-card {
+      background: var(--dark-gold);
+      color: var(--black);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      line-height: 1.3;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .booking-card strong { display: block; margin-bottom: 2px; text-transform: uppercase; font-size: 10px; }
+    .booking-card .client-name { font-weight: 700; margin-bottom: 4px; display: block; }
+    .booking-card .actions { display: none; margin-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 4px; }
+    .booking-card:hover .actions { display: block; }
+    .booking-card .cancel-btn { background: rgba(0,0,0,0.1); border: none; font-size: 9px; padding: 2px 4px; border-radius: 2px; cursor: pointer; color: #000; }
+    .booking-card .cancel-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: var(--charcoal);
+      padding: 16px 24px;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+    .week-nav-info { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--warm-white); flex-grow: 1; }
 
     table {
       width: 100%;
@@ -437,46 +504,11 @@
 
     <!-- Appointments Tab -->
     <div id="appointments-tab" class="tab-content active">
-      <!-- Stats -->
-      <div class="stats-grid" id="statsGrid">
-        <div class="stat-card">
-          <div class="stat-number" id="totalAppointments">0</div>
-          <div class="stat-label">Total de Marcações</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="todayAppointments">0</div>
-          <div class="stat-label">Hoje</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="weekAppointments">0</div>
-          <div class="stat-label">Esta Semana</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="monthAppointments">0</div>
-          <div class="stat-label">Este Mês</div>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="filter-section">
+      <!-- Week & Barber Selector -->
+      <div class="week-nav">
         <div class="filter-group">
-          <label for="filterDate">Data</label>
-          <input type="date" id="filterDate" onchange="filterAppointments()">
-        </div>
-        <div class="filter-group">
-          <label for="filterService">Serviço</label>
-          <select id="filterService" onchange="filterAppointments()">
-            <option value="">Todos os Serviços</option>
-            <option value="classic-haircut">Corte Clássico</option>
-            <option value="beard-shave">Barba e Barbear</option>
-            <option value="complete-package">Pacote Completo</option>
-            <option value="kids-haircut">Corte Infantil</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="filterBarber">Barbeiro</label>
-          <select id="filterBarber" onchange="filterAppointments()">
-            <option value="">Todos os Barbeiros</option>
+          <label>Barbeiro</label>
+          <select id="adminBarberFilter" onchange="loadAppointments()">
             <option value="miranda">Miranda</option>
             <option value="ricardo">Ricardo</option>
             <option value="duarte">Duarte</option>
@@ -485,33 +517,24 @@
             <option value="alex">Alex</option>
           </select>
         </div>
-        <button class="btn btn-secondary" onclick="clearFilters()">Limpar Filtros</button>
+        <div style="flex-grow:1; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <button class="btn btn-secondary" style="padding:8px 12px;" onclick="navigateWeek(-1)">&lt; Anterior</button>
+          <div class="week-nav-info" id="weekRangeDisplay">Carregando...</div>
+          <button class="btn btn-secondary" style="padding:8px 12px;" onclick="navigateWeek(1)">Próxima &gt;</button>
+        </div>
         <button class="btn btn-primary" onclick="loadAppointments()">Atualizar</button>
       </div>
 
-      <!-- Appointments Table -->
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Telefone</th>
-              <th>Serviço</th>
-              <th>Barbeiro</th>
-              <th>Data</th>
-              <th>Hora</th>
-              <th>Notas</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="appointmentsTable">
-            <tr>
-              <td colspan="10" class="loading">A carregar marcações</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Stats (Small) -->
+      <div style="display:flex; gap:16px; margin-bottom:16px;">
+        <div style="font-size:12px; color:#888;">Total esta semana: <span id="weekTotalCount" style="color:var(--champagne); font-weight:700;">0</span></div>
+      </div>
+
+      <!-- Schedule Grid -->
+      <div class="schedule-container">
+        <div class="schedule-grid" id="weeklyScheduleGrid">
+          <!-- Header and cells generated by JS -->
+        </div>
       </div>
     </div>
 
@@ -587,6 +610,12 @@
     const API_BASE = window.location.origin;
     let allAppointments = [];
     let messages = [];
+    let currentWeekStart = new Date();
+    // Normalize to Monday of current week
+    const day = currentWeekStart.getDay();
+    const diff = currentWeekStart.getDate() - day + (day === 0 ? -6 : 1);
+    currentWeekStart.setDate(diff);
+    currentWeekStart.setHours(0,0,0,0);
 
     const SERVICE_NAMES = {
       'classic-haircut': 'Corte Clássico',
@@ -595,7 +624,6 @@
       'kids-haircut': 'Corte Infantil'
     };
 
-    // Check login status on page load
     document.addEventListener('DOMContentLoaded', async () => {
       const token = localStorage.getItem('adminToken');
       if (!token) {
@@ -621,131 +649,115 @@
     function switchTab(tabName) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
       document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
       document.getElementById(`${tabName}-tab`).classList.add('active');
     }
 
-    // ============ Appointments ============
+    // ============ Appointments / Weekly Schedule ============
 
     async function loadAppointments() {
-      const tbody = document.getElementById('appointmentsTable');
-      tbody.innerHTML = '<tr><td colspan="10" class="loading">A carregar marcações</td></tr>';
+      const grid = document.getElementById('weeklyScheduleGrid');
+      grid.innerHTML = '<div style="grid-column: span 7; padding: 40px; text-align: center; color: #888;">A carregar agenda...</div>';
 
       try {
-        const response = await fetch(`${API_BASE}/api/appointments`, {
-          headers: getAuthHeaders()
-        });
+        const response = await fetch(`${API_BASE}/api/appointments`, { headers: getAuthHeaders() });
+        if (response.status === 401) { logout(); return; }
         
-        if (response.status === 401) {
-          localStorage.removeItem('adminToken');
-          window.location.href = '/admin-login.html';
-          return;
-        }
-        
-        const appointments = await response.json();
-        allAppointments = appointments;
-        
-        updateStats(appointments);
-        renderAppointments(appointments);
+        allAppointments = await response.json();
+        renderWeeklyGrid();
       } catch (error) {
         console.error('Error loading appointments:', error);
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível conectar ao servidor.</p></td></tr>';
       }
     }
 
-    function updateStats(appointments) {
-      const today = new Date().toISOString().split('T')[0];
-      const now = new Date();
-      const weekStart = new Date(now.setDate(now.getDate() - now.getDay())).toISOString().split('T')[0];
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-
-      document.getElementById('totalAppointments').textContent = appointments.length;
-      document.getElementById('todayAppointments').textContent = appointments.filter(a => a.date === today).length;
-      document.getElementById('weekAppointments').textContent = appointments.filter(a => a.date >= weekStart).length;
-      document.getElementById('monthAppointments').textContent = appointments.filter(a => a.date >= monthStart).length;
+    function navigateWeek(delta) {
+      currentWeekStart.setDate(currentWeekStart.getDate() + (delta * 7));
+      renderWeeklyGrid();
     }
 
-    function renderAppointments(appointments) {
-      const tbody = document.getElementById('appointmentsTable');
+    function renderWeeklyGrid() {
+      const grid = document.getElementById('weeklyScheduleGrid');
+      const barberFilter = document.getElementById('adminBarberFilter').value;
+      const weekEnd = new Date(currentWeekStart);
+      weekEnd.setDate(weekEnd.getDate() + 5); // Saturday
 
-      if (appointments.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><h3>Nenhuma marcação encontrada</h3><p>Ainda não há marcações registadas.</p></td></tr>';
-        return;
+      // Update Display Info
+      const options = { day: 'numeric', month: 'long' };
+      document.getElementById('weekRangeDisplay').textContent = `Semana de ${currentWeekStart.toLocaleDateString('pt-PT', options)} a ${weekEnd.toLocaleDateString('pt-PT', options)}`;
+
+      grid.innerHTML = '';
+      
+      // 1. Headers
+      grid.appendChild(createHeaderCell('Hora'));
+      const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+      const dateStrings = [];
+      
+      for(let i=0; i<6; i++) {
+        const d = new Date(currentWeekStart);
+        d.setDate(d.getDate() + i);
+        const dStr = d.toISOString().split('T')[0];
+        dateStrings.push(dStr);
+        grid.appendChild(createHeaderCell(`${weekDays[i]} (${d.getDate()}/${d.getMonth()+1})`));
       }
 
-      tbody.innerHTML = appointments.map(apt => {
-        const date = new Date(apt.date + 'T00:00:00');
-        const formattedDate = date.toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      // 2. Rows (Time Slots)
+      const times = [];
+      for(let h=8; h<=19; h++) {
+        times.push(`${h.toString().padStart(2, '0')}:00`);
+        times.push(`${h.toString().padStart(2, '0')}:30`);
+      }
 
-        return `
-          <tr>
-            <td>#${apt.id}</td>
-            <td>${escapeHtml(apt.name)}</td>
-            <td>${escapeHtml(apt.email)}</td>
-            <td>${escapeHtml(apt.phone)}</td>
-            <td><span class="badge badge-confirmed">${SERVICE_NAMES[apt.service] || apt.service}</span></td>
-            <td>${apt.barberName || apt.barber || '—'}</td>
-            <td>${formattedDate}</td>
-            <td>${apt.time}</td>
-            <td>${escapeHtml(apt.notes || '—')}</td>
-            <td>
-              <button class="action-btn delete" onclick="deleteAppointment(${apt.id})">Cancelar</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      let weekTotal = 0;
+
+      times.forEach(time => {
+        // Time label column
+        const timeCol = document.createElement('div');
+        timeCol.className = 'schedule-time-col';
+        timeCol.textContent = time;
+        grid.appendChild(timeCol);
+
+        // Day columns
+        dateStrings.forEach(date => {
+          const cell = document.createElement('div');
+          cell.className = 'schedule-cell';
+          
+          const appointment = allAppointments.find(a => a.date === date && a.time === time && a.barber === barberFilter && !a.cancelled);
+          
+          if (appointment) {
+            weekTotal++;
+            const card = document.createElement('div');
+            card.className = 'booking-card';
+            card.innerHTML = `
+              <strong>${SERVICE_NAMES[appointment.service] || appointment.service}</strong>
+              <span class="client-name">${escapeHtml(appointment.name)}</span>
+              <div style="font-size:9px; opacity:0.8">${appointment.phone}</div>
+              <div class="actions">
+                <button class="cancel-btn" onclick="deleteAppointment(${appointment.id})">Cancelar</button>
+              </div>
+            `;
+            cell.appendChild(card);
+          }
+          
+          grid.appendChild(cell);
+        });
+      });
+
+      document.getElementById('weekTotalCount').textContent = weekTotal;
     }
 
-    function filterAppointments() {
-      const dateFilter = document.getElementById('filterDate').value;
-      const serviceFilter = document.getElementById('filterService').value;
-      const barberFilter = document.getElementById('filterBarber').value;
-
-      let filtered = allAppointments;
-
-      if (dateFilter) {
-        filtered = filtered.filter(a => a.date === dateFilter);
-      }
-
-      if (serviceFilter) {
-        filtered = filtered.filter(a => a.service === serviceFilter);
-      }
-
-      if (barberFilter) {
-        filtered = filtered.filter(a => a.barber === barberFilter);
-      }
-
-      renderAppointments(filtered);
-    }
-
-    function clearFilters() {
-      document.getElementById('filterDate').value = '';
-      document.getElementById('filterService').value = '';
-      document.getElementById('filterBarber').value = '';
-      renderAppointments(allAppointments);
+    function createHeaderCell(text) {
+      const el = document.createElement('div');
+      el.className = 'schedule-header';
+      el.textContent = text;
+      return el;
     }
 
     async function deleteAppointment(id) {
-      if (!confirm('Tem a certeza que deseja cancelar esta marcação?')) {
-        return;
-      }
-
+      if (!confirm('Tem a certeza que deseja cancelar esta marcação?')) return;
       try {
-        const response = await fetch(`${API_BASE}/api/appointments/${id}`, {
-          method: 'DELETE',
-          headers: getAuthHeaders()
-        });
-
-        if (response.ok) {
-          showToast('Marcação cancelada com sucesso!');
-          loadAppointments();
-        } else {
-          throw new Error('Failed to delete');
-        }
-      } catch (error) {
-        showToast('Erro ao cancelar marcação', true);
-      }
+        const response = await fetch(`${API_BASE}/api/appointments/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+        if (response.ok) { showToast('Marcação cancelada!'); loadAppointments(); }
+      } catch (error) { showToast('Erro ao cancelar', true); }
     }
 
     // ============ Barbers Management ============
@@ -753,30 +765,17 @@
     async function loadBarbersAdmin() {
       const tbody = document.getElementById('barbersTable');
       tbody.innerHTML = '<tr><td colspan="4" class="loading">A carregar barbeiros</td></tr>';
-
       try {
-        const response = await fetch(`${API_BASE}/api/barbers`, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.ok) {
-          const barbers = await response.json();
-          renderBarbersAdmin(barbers);
-        }
-      } catch (error) {
-        console.error('Error loading barbers:', error);
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Erro ao carregar</td></tr>';
-      }
+        const response = await fetch(`${API_BASE}/api/barbers`, { headers: getAuthHeaders() });
+        if (response.ok) { const barbers = await response.json(); renderBarbersAdmin(barbers); }
+      } catch (error) { console.error('Error loading barbers:', error); }
     }
 
     function renderBarbersAdmin(barbers) {
       const tbody = document.getElementById('barbersTable');
       tbody.innerHTML = barbers.map(barber => {
         const isActive = barber.active !== false;
-        const statusBadge = isActive 
-          ? '<span class="badge badge-active">Ativo</span>' 
-          : '<span class="badge badge-inactive">Inativo</span>';
-        
+        const statusBadge = isActive ? '<span class="badge badge-active">Ativo</span>' : '<span class="badge badge-inactive">Inativo</span>';
         const holidaysInfo = (barber.holidays || []).map(h => 
           `<div style="font-size: 11px; color: #888;">${h.start} a ${h.end} <button onclick="removeHoliday('${barber.id}', '${h.start}', '${h.end}')" style="background:none; border:none; color:var(--danger); cursor:pointer; padding:0 4px;">&times;</button></div>`
         ).join('') || '<div style="font-size: 11px; color: #555;">Sem férias agendadas</div>';
@@ -796,40 +795,19 @@
             </div>
           </div>
         `;
-
-        return `
-          <tr>
-            <td style="vertical-align:top;">${barber.id}</td>
-            <td style="vertical-align:top;"><strong>${barber.name}</strong></td>
-            <td style="vertical-align:top;">
-              ${statusBadge}
-              <div style="margin-top:12px;">
-                <p style="font-size:10px; text-transform:uppercase; color:#555; margin-bottom:4px;">Períodos de Férias:</p>
-                ${holidaysInfo}
-              </div>
-            </td>
-            <td>${actionBtns}</td>
-          </tr>
-        `;
+        return `<tr><td style="vertical-align:top;">${barber.id}</td><td style="vertical-align:top;"><strong>${barber.name}</strong></td><td style="vertical-align:top;">${statusBadge}<div style="margin-top:12px;"><p style="font-size:10px; text-transform:uppercase; color:#555; margin-bottom:4px;">Períodos de Férias:</p>${holidaysInfo}</div></td><td>${actionBtns}</td></tr>`;
       }).join('');
     }
 
     async function addHoliday(barberId) {
       const start = document.getElementById(`start-${barberId}`).value;
       const end = document.getElementById(`end-${barberId}`).value;
-      
-      if (!start || !end) {
-        alert('Por favor, selecione as datas de início e fim.');
-        return;
-      }
-
+      if (!start || !end) { alert('Por favor, selecione as datas.'); return; }
       const response = await fetch(`${API_BASE}/api/barbers`, { headers: getAuthHeaders() });
       const barbers = await response.json();
       const barber = barbers.find(b => b.id === barberId);
-      
       const holidays = barber.holidays || [];
       holidays.push({ start, end });
-      
       await updateBarber(barberId, { holidays });
       loadBarbersAdmin();
     }
@@ -838,137 +816,66 @@
       const response = await fetch(`${API_BASE}/api/barbers`, { headers: getAuthHeaders() });
       const barbers = await response.json();
       const barber = barbers.find(b => b.id === barberId);
-      
       const holidays = (barber.holidays || []).filter(h => h.start !== start || h.end !== end);
-      
       await updateBarber(barberId, { holidays });
       loadBarbersAdmin();
     }
 
-    async function toggleBarberStatus(id, newStatus) {
-      await updateBarber(id, { active: newStatus });
-      showToast(`Estado do barbeiro atualizado!`);
-      loadBarbersAdmin();
-    }
+    async function toggleBarberStatus(id, newStatus) { await updateBarber(id, { active: newStatus }); showToast(`Estado atualizado!`); loadBarbersAdmin(); }
 
     async function updateBarber(id, data) {
       try {
-        const response = await fetch(`${API_BASE}/api/barbers/${id}`, {
-          method: 'PATCH',
-          headers: getAuthHeaders(),
-          body: JSON.stringify(data)
-        });
+        const response = await fetch(`${API_BASE}/api/barbers/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify(data) });
         return response.ok;
-      } catch (error) {
-        showToast('Erro ao atualizar barbeiro', true);
-        return false;
-      }
+      } catch (error) { showToast('Erro ao atualizar', true); return false; }
     }
 
     // ============ Messages History ============
 
     async function loadTwilioStatus() {
       try {
-        const response = await fetch(`${API_BASE}/api/twilio/status`, {
-          headers: getAuthHeaders()
-        });
-        
+        const response = await fetch(`${API_BASE}/api/twilio/status`, { headers: getAuthHeaders() });
         if (response.ok) {
           const data = await response.json();
           const statusEl = document.getElementById('twilioStatus');
-          if (data.configured) {
-            statusEl.textContent = 'Ativo';
-            statusEl.className = 'badge badge-active';
-          } else {
-            statusEl.textContent = 'Não configurado';
-            statusEl.className = 'badge badge-inactive';
-          }
+          if (data.configured) { statusEl.textContent = 'Ativo'; statusEl.className = 'badge badge-active'; } 
+          else { statusEl.textContent = 'Não configurado'; statusEl.className = 'badge badge-inactive'; }
         }
-      } catch (error) {
-        console.error('Error loading Twilio status:', error);
-      }
+      } catch (error) { console.error('Error loading Twilio status:', error); }
     }
 
     async function loadMessages() {
       const tbody = document.getElementById('messagesTable');
       tbody.innerHTML = '<tr><td colspan="5" class="loading">A carregar mensagens</td></tr>';
-
       try {
-        const response = await fetch(`${API_BASE}/api/messages`, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.status === 401) {
-          localStorage.removeItem('adminToken');
-          window.location.href = '/admin-login.html';
-          return;
-        }
-        
+        const response = await fetch(`${API_BASE}/api/messages`, { headers: getAuthHeaders() });
+        if (response.status === 401) { logout(); return; }
         messages = await response.json();
         renderMessages();
-      } catch (error) {
-        console.error('Error loading messages:', error);
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>Erro ao carregar</h3></td></tr>';
-      }
+      } catch (error) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>Erro ao carregar</h3></td></tr>'; }
     }
 
     function renderMessages() {
       const tbody = document.getElementById('messagesTable');
-
-      if (messages.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>Nenhuma mensagem encontrada</h3><p>Ainda não há mensagens enviadas.</p></td></tr>';
-        return;
-      }
-
+      if (messages.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>Nenhuma mensagem encontrada</h3></td></tr>'; return; }
       tbody.innerHTML = messages.map(msg => {
         const date = new Date(msg.timestamp);
-        const formattedDate = date.toLocaleDateString('pt-PT', { 
-          day: 'numeric', 
-          month: 'short', 
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-
-        let statusBadge;
-        if (msg.smsSent) {
-          statusBadge = '<span class="badge badge-sent">Enviado</span>';
-        } else if (msg.smsError) {
-          statusBadge = `<span class="badge badge-failed" title="${escapeHtml(msg.smsError)}">Falhou</span>`;
-        } else {
-          statusBadge = '<span class="badge badge-pending">Pendente</span>';
-        }
-
-        return `
-          <tr>
-            <td>#${msg.id}</td>
-            <td>${escapeHtml(msg.phone)}</td>
-            <td>${formattedDate}</td>
-            <td>${statusBadge}</td>
-            <td>${msg.smsSid ? escapeHtml(msg.smsSid.substring(0, 20)) + '...' : '—'}</td>
-          </tr>
-        `;
+        const formattedDate = date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        let statusBadge = msg.smsSent ? '<span class="badge badge-sent">Enviado</span>' : (msg.smsError ? `<span class="badge badge-failed" title="${escapeHtml(msg.smsError)}">Falhou</span>` : '<span class="badge badge-pending">Pendente</span>');
+        return `<tr><td>#${msg.id}</td><td>${escapeHtml(msg.phone)}</td><td>${formattedDate}</td><td>${statusBadge}</td><td>${msg.smsSid ? escapeHtml(msg.smsSid.substring(0, 20)) + '...' : '—'}</td></tr>`;
       }).join('');
     }
-
-    // ============ Utilities ============
 
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.classList.toggle('error', isError);
       toast.classList.add('show');
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text || '';
-      return div.innerHTML;
-    }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+
   </script>
 </body>
 </html>
