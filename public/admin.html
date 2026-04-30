@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbearia D'Ouro — Painel de Administração</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #0A0A0A;
+      --charcoal: #1A1A1A;
+      --dark-gold: #B8860B;
+      --champagne: #D4AF37;
+      --warm-white: #FAF8F5;
+      --cream: #F5F0E8;
+      --bronze: #8B6914;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      font-size: 16px;
+      color: var(--warm-white);
+      background: var(--black);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; }
+
+    .admin-header {
+      background: var(--charcoal);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+
+    .admin-header h1 {
+      font-size: 24px;
+      color: var(--champagne);
+    }
+
+    .admin-header .back-link {
+      color: var(--warm-white);
+      text-decoration: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+
+    .admin-header .back-link:hover {
+      color: var(--champagne);
+    }
+
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--charcoal);
+      padding: 24px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #333;
+    }
+
+    .stat-card .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      color: var(--champagne);
+      font-weight: 700;
+    }
+
+    .stat-card .stat-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-top: 8px;
+    }
+
+    /* Filter Section */
+    .filter-section {
+      background: var(--charcoal);
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+      border: 1px solid #333;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-group label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+    }
+
+    .filter-group input, .filter-group select {
+      background: var(--black);
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      color: var(--warm-white);
+      min-width: 200px;
+    }
+
+    .filter-group input:focus, .filter-group select:focus {
+      outline: none;
+      border-color: var(--dark-gold);
+    }
+
+    .btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-primary {
+      background: var(--dark-gold);
+      color: var(--black);
+    }
+
+    .btn-primary:hover {
+      background: var(--champagne);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--warm-white);
+      border: 1px solid var(--warm-white);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(250,248,245,0.1);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--charcoal);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--black);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid #333;
+      color: var(--warm-white);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: 'Montserrat', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-pending {
+      background: rgba(241, 196, 15, 0.2);
+      color: #f1c40f;
+    }
+
+    .badge-confirmed {
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+    }
+
+    .badge-completed {
+      background: rgba(52, 152, 219, 0.2);
+      color: #3498db;
+    }
+
+    .badge-cancelled {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+
+    .action-btn {
+      padding: 8px 16px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Montserrat', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .action-btn.delete {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid var(--danger);
+    }
+
+    .action-btn.delete:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+
+    .empty-state h3 {
+      color: var(--warm-white);
+      margin-bottom: 8px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--dark-gold);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--charcoal);
+      color: var(--warm-white);
+      padding: 16px 24px;
+      border-radius: 8px;
+      border-left: 4px solid var(--success);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .admin-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .admin-container {
+        padding: 20px;
+      }
+
+      .filter-section {
+        flex-direction: column;
+      }
+
+      .filter-group input, .filter-group select {
+        width: 100%;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="admin-header">
+    <h1>Barbearia D'Ouro — Painel de Administração</h1>
+    <div>
+      <button class="btn btn-secondary" onclick="logout()" style="padding: 8px 16px; font-size: 12px;">Sair</button>
+      <a href="/" class="back-link" style="margin-left: 16px;">← Voltar ao Site</a>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalAppointments">0</div>
+        <div class="stat-label">Total de Marcações</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="todayAppointments">0</div>
+        <div class="stat-label">Hoje</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="weekAppointments">0</div>
+        <div class="stat-label">Esta Semana</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="monthAppointments">0</div>
+        <div class="stat-label">Este Mês</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <label for="filterDate">Data</label>
+        <input type="date" id="filterDate" onchange="filterAppointments()">
+      </div>
+      <div class="filter-group">
+        <label for="filterService">Serviço</label>
+        <select id="filterService" onchange="filterAppointments()">
+          <option value="">Todos os Serviços</option>
+          <option value="classic-haircut">Corte Clássico</option>
+          <option value="beard-shave">Barba e Barbear</option>
+          <option value="complete-package">Pacote Completo</option>
+          <option value="kids-haircut">Corte Infantil</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" onclick="clearFilters()">Limpar Filtros</button>
+      <button class="btn btn-primary" onclick="loadAppointments()">Atualizar</button>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>Serviço</th>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>Notas</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="appointmentsTable">
+          <tr>
+            <td colspan="9" class="loading">A carregar marcações</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let allAppointments = [];
+
+    const SERVICE_NAMES = {
+      'classic-haircut': 'Corte Clássico',
+      'beard-shave': 'Barba e Barbear',
+      'complete-package': 'Pacote Completo',
+      'kids-haircut': 'Corte Infantil'
+    };
+
+    // Check login status on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin-login.html';
+        return;
+      }
+      loadAppointments();
+    });
+
+    function getAuthHeaders() {
+      const token = localStorage.getItem('adminToken');
+      return token ? { 'x-admin-token': token } : {};
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/admin-login.html';
+    }
+
+    async function loadAppointments() {
+      const tbody = document.getElementById('appointmentsTable');
+      tbody.innerHTML = '<tr><td colspan="9" class="loading">A carregar marcações</td></tr>';
+
+      try {
+        const response = await fetch(`${API_BASE}/api/appointments`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          window.location.href = '/admin-login.html';
+          return;
+        }
+        
+        const appointments = await response.json();
+        allAppointments = appointments;
+        
+        updateStats(appointments);
+        renderAppointments(appointments);
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível conectar ao servidor.</p></td></tr>';
+      }
+    }
+
+    function updateStats(appointments) {
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const weekStart = new Date(now.setDate(now.getDate() - now.getDay())).toISOString().split('T')[0];
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+
+      document.getElementById('totalAppointments').textContent = appointments.length;
+      document.getElementById('todayAppointments').textContent = appointments.filter(a => a.date === today).length;
+      document.getElementById('weekAppointments').textContent = appointments.filter(a => a.date >= weekStart).length;
+      document.getElementById('monthAppointments').textContent = appointments.filter(a => a.date >= monthStart).length;
+    }
+
+    function renderAppointments(appointments) {
+      const tbody = document.getElementById('appointmentsTable');
+
+      if (appointments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><h3>Nenhuma marcação encontrada</h3><p>Ainda não há marcações registadas.</p></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = appointments.map(apt => {
+        const date = new Date(apt.date + 'T00:00:00');
+        const formattedDate = date.toLocaleDateString('pt-PT', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+
+        return `
+          <tr>
+            <td>#${apt.id}</td>
+            <td>${escapeHtml(apt.name)}</td>
+            <td>${escapeHtml(apt.email)}</td>
+            <td>${escapeHtml(apt.phone)}</td>
+            <td><span class="badge badge-confirmed">${SERVICE_NAMES[apt.service] || apt.service}</span></td>
+            <td>${formattedDate}</td>
+            <td>${apt.time}</td>
+            <td>${escapeHtml(apt.notes || '—')}</td>
+            <td>
+              <button class="action-btn delete" onclick="deleteAppointment(${apt.id})">Cancelar</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterAppointments() {
+      const dateFilter = document.getElementById('filterDate').value;
+      const serviceFilter = document.getElementById('filterService').value;
+
+      let filtered = allAppointments;
+
+      if (dateFilter) {
+        filtered = filtered.filter(a => a.date === dateFilter);
+      }
+
+      if (serviceFilter) {
+        filtered = filtered.filter(a => a.service === serviceFilter);
+      }
+
+      renderAppointments(filtered);
+    }
+
+    function clearFilters() {
+      document.getElementById('filterDate').value = '';
+      document.getElementById('filterService').value = '';
+      renderAppointments(allAppointments);
+    }
+
+    async function deleteAppointment(id) {
+      if (!confirm('Tem a certeza que deseja cancelar esta marcação?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/appointments/${id}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+          showToast('Marcação cancelada com sucesso!');
+          loadAppointments();
+        } else {
+          throw new Error('Failed to delete');
+        }
+      } catch (error) {
+        showToast('Erro ao cancelar marcação', true);
+      }
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.toggle('error', isError);
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

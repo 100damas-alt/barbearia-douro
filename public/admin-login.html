@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbearia D'Ouro — Login de Administrador</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #0A0A0A;
+      --charcoal: #1A1A1A;
+      --dark-gold: #B8860B;
+      --champagne: #D4AF37;
+      --warm-white: #FAF8F5;
+      --danger: #e74c3c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      font-size: 16px;
+      color: var(--warm-white);
+      background: var(--black);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-container {
+      background: var(--charcoal);
+      padding: 48px;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid #333;
+      text-align: center;
+    }
+
+    .login-container h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: var(--champagne);
+      margin-bottom: 8px;
+    }
+
+    .login-container .subtitle {
+      color: #888;
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .form-group input {
+      width: 100%;
+      background: var(--black);
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 14px 16px;
+      font-family: 'Lato', sans-serif;
+      font-size: 16px;
+      color: var(--warm-white);
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--dark-gold);
+    }
+
+    .btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 16px 32px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: var(--dark-gold);
+      color: var(--black);
+    }
+
+    .btn-primary:hover {
+      background: var(--champagne);
+    }
+
+    .btn.loading {
+      position: relative;
+      color: transparent;
+    }
+
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--black);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    .error-message {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #888;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: var(--champagne);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Barbearia D'Ouro</h1>
+    <p class="subtitle">Painel de Administração</p>
+    
+    <div class="error-message" id="errorMessage"></div>
+    
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="password">Palavra-passe</label>
+        <input type="password" id="password" name="password" placeholder="Insira a palavra-passe" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">Entrar</button>
+    </form>
+    
+    <a href="/" class="back-link">← Voltar ao site</a>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('loginBtn');
+      const errorMsg = document.getElementById('errorMessage');
+
+      errorMsg.classList.remove('show');
+      btn.classList.add('loading');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          // Store token in localStorage
+          localStorage.setItem('adminToken', data.token);
+          // Redirect to admin
+          window.location.href = '/admin.html';
+        } else {
+          errorMsg.textContent = data.error || 'Palavra-passe incorreta';
+          errorMsg.classList.add('show');
+          btn.classList.remove('loading');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorMsg.textContent = 'Erro ao conectar ao servidor';
+        errorMsg.classList.add('show');
+        btn.classList.remove('loading');
+      }
+    }
+  </script>
+</body>
+</html>

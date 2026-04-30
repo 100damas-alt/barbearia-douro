@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbearia D'Ouro — Onde a Tradição Encontra a Excelência</title>
+  <meta name="description" content="Serviços de barbearia premium em Portugal. Marque o seu agendamento hoje.">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #0A0A0A;
+      --charcoal: #1A1A1A;
+      --dark-gold: #B8860B;
+      --champagne: #D4AF37;
+      --warm-white: #FAF8F5;
+      --cream: #F5F0E8;
+      --bronze: #8B6914;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      font-size: 16px;
+      color: var(--warm-white);
+      background: var(--black);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; }
+    h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 700; }
+    h2 { font-size: clamp(28px, 4vw, 48px); }
+    h3 { font-size: clamp(20px, 2.5vw, 28px); }
+
+    a { text-decoration: none; color: inherit; transition: color 0.3s ease; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Buttons */
+    .btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 16px 32px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-primary {
+      background: var(--dark-gold);
+      color: var(--black);
+    }
+    .btn-primary:hover {
+      background: var(--champagne);
+      transform: scale(1.02);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--warm-white);
+      border: 1px solid var(--warm-white);
+    }
+    .btn-secondary:hover { background: rgba(250,248,245,0.1); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--dark-gold);
+      border: 1px solid var(--dark-gold);
+    }
+    .btn-ghost:hover { background: rgba(184,134,11,0.1); }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .nav.scrolled {
+      background: rgba(10,10,10,0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-logo { height: 40px; }
+    .nav-logo img { height: 100%; width: auto; }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--warm-white);
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--dark-gold);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links a:hover { color: var(--champagne); }
+
+    .nav-cta .btn { padding: 12px 24px; }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 10px;
+      background: none;
+      border: none;
+    }
+
+    .nav-hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--warm-white);
+      transition: all 0.3s ease;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.98);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .mobile-menu.active {
+      display: flex;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .mobile-menu a {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 32px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .mobile-menu-close {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      color: var(--warm-white);
+      font-size: 48px;
+      cursor: pointer;
+    }
+
+    /* Hero Section */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      background: url('images/hero-banner.jpg') center/cover no-repeat;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.7), rgba(10,10,10,0.85));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 24px;
+    }
+
+    .hero h1 {
+      color: var(--warm-white);
+      margin-bottom: 16px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .hero-tagline {
+      font-family: 'Lato', sans-serif;
+      font-size: 20px;
+      color: var(--champagne);
+      margin-bottom: 48px;
+      letter-spacing: 2px;
+    }
+
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* Section Styles */
+    section { padding: 100px 0; }
+    @media (max-width: 768px) { section { padding: 60px 0; } }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-title h2 { color: var(--warm-white); margin-bottom: 16px; }
+    .section-title p { color: var(--champagne); font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; }
+
+    /* Services Section */
+    .services { background: var(--charcoal); }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    @media (max-width: 1024px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .services-grid { grid-template-columns: 1fr; } }
+
+    .service-card {
+      background: var(--black);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .service-card:hover {
+      border-color: var(--dark-gold);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transform: translateY(-4px);
+    }
+
+    .service-card img { width: 100%; height: 250px; object-fit: cover; }
+
+    .service-card-content { padding: 24px; }
+
+    .service-card h3 { color: var(--warm-white); margin-bottom: 8px; }
+    .service-card p { color: #888; font-size: 14px; margin-bottom: 16px; }
+    .service-card .price { color: var(--champagne); font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 18px; }
+
+    /* Gallery Section */
+    .gallery { background: var(--black); }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(184,134,11,0.3);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .gallery-item:hover::after { opacity: 1; }
+    .gallery-item:hover img { transform: scale(1.05); }
+
+    /* About Section */
+    .about {
+      background: linear-gradient(to right, var(--charcoal), var(--black));
+    }
+
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) { .about-content { grid-template-columns: 1fr; } }
+
+    .about-image img { border-radius: 8px; width: 100%; }
+
+    .about-text h2 { color: var(--warm-white); margin-bottom: 24px; }
+    .about-text p { color: #ccc; margin-bottom: 16px; line-height: 1.8; }
+
+    .about-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 32px;
+    }
+
+    .stat { text-align: center; }
+    .stat-number { font-family: 'Playfair Display', serif; font-size: 48px; color: var(--champagne); font-weight: 700; }
+    .stat-label { font-family: 'Montserrat', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+
+    /* Booking CTA Section */
+    .booking-cta {
+      position: relative;
+      background: url('images/booking-cta.jpg') center/cover no-repeat;
+      text-align: center;
+    }
+
+    .booking-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(10,10,10,0.85);
+    }
+
+    .booking-cta-content { position: relative; z-index: 1; }
+    .booking-cta h2 { color: var(--warm-white); margin-bottom: 16px; }
+    .booking-cta p { color: var(--champagne); font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; margin-bottom: 32px; }
+
+    /* Contact Section */
+    .contact { background: var(--cream); }
+
+    .contact .section-title h2 { color: var(--black); }
+    .contact .section-title p { color: var(--bronze); }
+
+    .contact-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+    }
+
+    @media (max-width: 768px) { .contact-content { grid-template-columns: 1fr; } }
+
+    .contact-info h3 { color: var(--black); margin-bottom: 24px; font-family: 'Playfair Display', serif; font-size: 24px; }
+    .contact-info p { color: #444; margin-bottom: 12px; font-size: 16px; }
+    .contact-info a { color: var(--bronze); }
+    .contact-info a:hover { color: var(--dark-gold); }
+
+    .contact-hours { margin: 32px 0; }
+    .contact-hours h4 { color: var(--black); margin-bottom: 12px; font-family: 'Montserrat', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    .contact-hours p { color: #444; }
+
+    .contact-form { display: flex; flex-direction: column; gap: 20px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-family: 'Montserrat', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--black); font-weight: 600; }
+
+    .form-group input, .form-group select, .form-group textarea {
+      background: var(--black);
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 14px 16px;
+      font-family: 'Lato', sans-serif;
+      font-size: 16px;
+      color: var(--warm-white);
+      transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--dark-gold);
+    }
+
+    .form-group input::placeholder, .form-group textarea::placeholder { color: #666; }
+
+    .form-group select { cursor: pointer; }
+    .form-group select option { background: var(--black); }
+
+    .form-group textarea { resize: vertical; min-height: 120px; }
+
+    .contact-form .btn { align-self: flex-start; }
+
+    /* Footer */
+    .footer {
+      background: var(--black);
+      padding: 64px 0 32px;
+      border-top: 1px solid #222;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-content { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+
+    .footer-brand p { color: #666; margin-top: 16px; font-size: 14px; }
+
+    .footer h4 { color: var(--warm-white); font-family: 'Montserrat', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+    .footer ul { list-style: none; }
+    .footer ul li { margin-bottom: 12px; }
+    .footer ul a { color: #666; font-size: 14px; }
+    .footer ul a:hover { color: var(--champagne); }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 32px;
+      border-top: 1px solid #222;
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Booking Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.9);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 24px;
+    }
+
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--charcoal);
+      border-radius: 8px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal { transform: translateY(0); }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px;
+      border-bottom: 1px solid #333;
+    }
+
+    .modal-header h3 { color: var(--warm-white); }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 28px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .modal-close:hover { color: var(--warm-white); }
+
+    .modal-body { padding: 24px; }
+
+    .modal-body .form-group { margin-bottom: 16px; }
+    .modal-body .btn { width: 100%; margin-top: 8px; }
+
+    .modal-success {
+      text-align: center;
+      padding: 48px 24px;
+      display: none;
+    }
+
+    .modal-success.active { display: block; }
+    .modal-form.hidden { display: none; }
+
+    .modal-success .checkmark {
+      width: 64px;
+      height: 64px;
+      background: var(--dark-gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 32px;
+      color: var(--black);
+    }
+
+    .modal-success h3 { color: var(--warm-white); margin-bottom: 16px; }
+    .modal-success p { color: #888; margin-bottom: 8px; }
+    .modal-success .booking-details { background: var(--black); padding: 16px; border-radius: 4px; margin: 24px 0; text-align: left; }
+    .modal-success .booking-details p { color: var(--warm-white); margin-bottom: 8px; }
+    .modal-success .booking-details strong { color: var(--champagne); }
+
+    /* Loading spinner */
+    .btn.loading { position: relative; color: transparent; }
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--black);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    /* Form error states */
+    .form-group.error input, .form-group.error select, .form-group.error textarea { border-color: #e74c3c; }
+    .form-error { color: #e74c3c; font-size: 12px; display: none; }
+    .form-group.error .form-error { display: block; }
+
+    /* Slot unavailable style */
+    .time-slot.unavailable {
+      background: #333 !important;
+      color: #666 !important;
+      cursor: not-allowed !important;
+      text-decoration: line-through;
+    }
+
+    /* Utility */
+    .gold-text { color: var(--champagne); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+    /* Animations on scroll */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-logo">
+      <img src="brand/logo.png" alt="Barbearia D'Ouro">
+    </a>
+    <ul class="nav-links">
+      <li><a href="#home">Início</a></li>
+      <li><a href="#services">Serviços</a></li>
+      <li><a href="#gallery">Galeria</a></li>
+      <li><a href="#about">Sobre</a></li>
+      <li><a href="#contact">Contacto</a></li>
+    </ul>
+    <button class="btn btn-primary nav-cta" onclick="openModal()">Marcar</button>
+    <button class="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Abrir menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-menu-close" onclick="toggleMobileMenu()">&times;</button>
+    <a href="#home" onclick="toggleMobileMenu()">Início</a>
+    <a href="#services" onclick="toggleMobileMenu()">Serviços</a>
+    <a href="#gallery" onclick="toggleMobileMenu()">Galeria</a>
+    <a href="#about" onclick="toggleMobileMenu()">Sobre</a>
+    <a href="#contact" onclick="toggleMobileMenu()">Contacto</a>
+    <button class="btn btn-primary" onclick="toggleMobileMenu(); openModal();">Marcar</button>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <h1>Barbearia D'Ouro</h1>
+      <p class="hero-tagline">Onde a tradição encontra a excelência</p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary" onclick="openModal()">Marcar o Seu Agendamento</button>
+        <a href="#services" class="btn btn-secondary">Explorar Serviços</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-title">
+        <p>Nossos Serviços</p>
+        <h2>Tratamento Premium</h2>
+      </div>
+      <div class="services-grid">
+        <div class="service-card fade-in">
+          <img src="images/services-classic-haircut.jpg" alt="Corte Clássico">
+          <div class="service-card-content">
+            <h3>Corte Clássico</h3>
+            <p>Cortes tradicionais com precisão moderna. Cada fio estilizado à perfeição.</p>
+            <span class="price">€25</span>
+          </div>
+        </div>
+        <div class="service-card fade-in">
+          <img src="images/services-beard-trim.jpg" alt="Barba e Barbear">
+          <div class="service-card-content">
+            <h3>Barba e Barbear</h3>
+            <p>Tratamento premium com toalha quente para um acabamento perfeito.</p>
+            <span class="price">€30</span>
+          </div>
+        </div>
+        <div class="service-card fade-in">
+          <img src="images/hero-banner.jpg" alt="Pacote Completo">
+          <div class="service-card-content">
+            <h3>Pacote Completo</h3>
+            <p>Serviço completo incluindo corte, barba e tratamento facial.</p>
+            <span class="price">€45</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section class="gallery" id="gallery">
+    <div class="container">
+      <div class="section-title">
+        <p>Nosso Trabalho</p>
+        <h2>Galeria</h2>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-item fade-in">
+          <img src="images/gallery-1.jpg" alt="Interior da barbearia">
+        </div>
+        <div class="gallery-item fade-in">
+          <img src="images/gallery-2.jpg" alt="Estilização de cabelo">
+        </div>
+        <div class="gallery-item fade-in">
+          <img src="images/gallery-3.jpg" alt="Aparar barba">
+        </div>
+        <div class="gallery-item fade-in">
+          <img src="images/gallery-4.jpg" alt="Ferramentas de grooming premium">
+        </div>
+        <div class="gallery-item fade-in">
+          <img src="images/gallery-5.jpg" alt="Cliente satisfeito">
+        </div>
+        <div class="gallery-item fade-in">
+          <img src="images/services-classic-haircut.jpg" alt="Resultado do corte clássico">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-content">
+        <div class="about-image fade-in">
+          <img src="images/hero-banner.jpg" alt="Atmosfera da barbearia">
+        </div>
+        <div class="about-text fade-in">
+          <div class="section-title" style="text-align:left;margin-bottom:24px;">
+            <p>A Nossa História</p>
+            <h2>Um Legado de Excelência</h2>
+          </div>
+          <p>Fundada com paixão pela arte atemporal da barbearia, a Barbearia D'Ouro junta tradição e sofisticação moderna. Os nossos mestres barbeiros combinam décadas de experiência com um compromisso inabalável com a arte.</p>
+          <p>Cada corte é mais do que um serviço — é um ritual. Acreditamos na precisão meditativa de um barbear perfeito e no poder transformador de um corte bem executado.</p>
+          <div class="about-stats">
+            <div class="stat">
+              <div class="stat-number">15+</div>
+              <div class="stat-label">Anos de Experiência</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">5000+</div>
+              <div class="stat-label">Clientes Atendidos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">100%</div>
+              <div class="stat-label">Satisfação</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking CTA Section -->
+  <section class="booking-cta">
+    <div class="container">
+      <div class="booking-cta-content fade-in">
+        <p>Eleve o Seu Estilo</p>
+        <h2>Pronto para uma Transformação?</h2>
+        <button class="btn btn-primary" onclick="openModal()">Marcar Agora</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="section-title">
+        <p>Entre em Contacto</p>
+        <h2>Contacte-nos</h2>
+      </div>
+      <div class="contact-content">
+        <div class="contact-info fade-in">
+          <h3>Visite-nos</h3>
+          <p>Rua das Precious Cuts, 123<br>Centro, Lisboa 1000-000</p>
+          <p><a href="tel:+351912345678">+351 912 345 678</a></p>
+          <p><a href="mailto:ola@barbeariadourou.pt">ola@barbeariadourou.pt</a></p>
+
+          <div class="contact-hours">
+            <h4>Horário de Funcionamento</h4>
+            <p>Segunda – Sexta: 09:00 – 13:00 | 15:00 – 19:00</p>
+            <p>Sábado: 08:00 – 14:00</p>
+            <p>Domingo: Encerrado</p>
+          </div>
+
+          <h3>Siga-nos</h3>
+          <p><a href="#">Instagram</a> · <a href="#">Facebook</a> · <a href="#">WhatsApp</a></p>
+        </div>
+
+        <form class="contact-form fade-in" id="contactForm" onsubmit="handleContactSubmit(event)">
+          <div class="form-group">
+            <label for="contactName">Nome Completo</label>
+            <input type="text" id="contactName" name="name" placeholder="O seu nome" required>
+          </div>
+          <div class="form-group">
+            <label for="contactEmail">Email</label>
+            <input type="email" id="contactEmail" name="email" placeholder="seu@email.com" required>
+          </div>
+          <div class="form-group">
+            <label for="contactPhone">Telefone</label>
+            <input type="tel" id="contactPhone" name="phone" placeholder="+351 900 000 000" required>
+          </div>
+          <div class="form-group">
+            <label for="contactService">Serviço</label>
+            <select id="contactService" name="service" required>
+              <option value="">Selecione um serviço</option>
+              <option value="classic-haircut">Corte Clássico — €25</option>
+              <option value="beard-shave">Barba e Barbear — €30</option>
+              <option value="complete-package">Pacote Completo — €45</option>
+              <option value="kids-haircut">Corte Infantil — €18</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="contactDate">Data Pretendida</label>
+            <input type="date" id="contactDate" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="contactMessage">Mensagem</label>
+            <textarea id="contactMessage" name="message" placeholder="Algum pedido especial?"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <img src="brand/logo.png" alt="Barbearia D'Ouro" style="height:48px;">
+          <p>Onde a tradição encontra a excelência. Serviços de barbearia premium em Lisboa, Portugal.</p>
+        </div>
+        <div>
+          <h4>Links Rápidos</h4>
+          <ul>
+            <li><a href="#home">Início</a></li>
+            <li><a href="#services">Serviços</a></li>
+            <li><a href="#gallery">Galeria</a></li>
+            <li><a href="#about">Sobre</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Serviços</h4>
+          <ul>
+            <li><a href="#services">Corte Clássico</a></li>
+            <li><a href="#services">Barba e Barbear</a></li>
+            <li><a href="#services">Pacote Completo</a></li>
+            <li><a href="#services">Corte Infantil</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contacto</h4>
+          <ul>
+            <li><a href="tel:+351912345678">+351 912 345 678</a></li>
+            <li><a href="mailto:ola@barbeariadourou.pt">ola@barbeariadourou.pt</a></li>
+            <li><a href="#contact">Rua das Precious Cuts, 123</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Barbearia D'Ouro. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Booking Modal -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle">Marcar Agendamento</h3>
+        <button class="modal-close" onclick="closeModal()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <!-- Booking Form -->
+      <div class="modal-body modal-form" id="bookingForm">
+        <form onsubmit="handleBookingSubmit(event)">
+          <div class="form-group">
+            <label for="bookName">Nome Completo *</label>
+            <input type="text" id="bookName" name="name" placeholder="O seu nome" required minlength="2">
+            <span class="form-error">Por favor, insira o seu nome (mínimo 2 caracteres)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bookEmail">Email *</label>
+            <input type="email" id="bookEmail" name="email" placeholder="seu@email.com" required>
+            <span class="form-error">Por favor, insira um email válido</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bookPhone">Telefone *</label>
+            <input type="tel" id="bookPhone" name="phone" placeholder="+351 900 000 000" required pattern="\+?[0-9\s]{9,}">
+            <span class="form-error">Por favor, insira um número de telefone válido</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bookService">Serviço *</label>
+            <select id="bookService" name="service" required>
+              <option value="">Selecione um serviço</option>
+              <option value="classic-haircut">Corte Clássico — €25</option>
+              <option value="beard-shave">Barba e Barbear — €30</option>
+              <option value="complete-package">Pacote Completo — €45</option>
+              <option value="kids-haircut">Corte Infantil — €18</option>
+            </select>
+            <span class="form-error">Por favor, selecione um serviço</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bookDate">Data Pretendida *</label>
+            <input type="date" id="bookDate" name="date" required onchange="loadAvailableSlots()">
+            <span class="form-error">Por favor, selecione uma data válida</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bookTime">Horário Pretendido *</label>
+            <select id="bookTime" name="time" required>
+              <option value="">Selecione primeiro uma data</option>
+            </select>
+            <span class="form-error" id="timeError">Por favor, selecione um horário disponível</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bookNotes">Pedidos Especiais</label>
+            <textarea id="bookNotes" name="notes" placeholder="Algum pedido especial?" maxlength="500"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="bookBtn">Confirmar Marcação</button>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div class="modal-success" id="bookingSuccess">
+        <div class="checkmark">&#10003;</div>
+        <h3>Marcação Confirmada!</h3>
+        <p>Loop-lo! Voir appointments soon at Barbearia D'Ouro.</p>
+        <div class="booking-details" id="bookingDetails"></div>
+        <button class="btn btn-secondary" onclick="closeModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    // Navigation scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Mobile menu
+    function toggleMobileMenu() {
+      document.getElementById('mobileMenu').classList.toggle('active');
+      document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('active') ? 'hidden' : '';
+    }
+
+    // Modal functions
+    function openModal() {
+      document.getElementById('bookingModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      setMinDate();
+      resetBookingForm();
+    }
+
+    function closeModal() {
+      document.getElementById('bookingModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on overlay click
+    document.getElementById('bookingModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('bookingModal')) closeModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Set minimum date to today
+    function setMinDate() {
+      const today = new Date().toISOString().split('T')[0];
+      const maxDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const dateInput = document.getElementById('bookDate');
+      dateInput.min = today;
+      dateInput.max = maxDate;
+      dateInput.value = '';
+
+      const contactDate = document.getElementById('contactDate');
+      if (contactDate) {
+        contactDate.min = today;
+        contactDate.max = maxDate;
+      }
+    }
+
+    // Load available slots when date is selected
+    async function loadAvailableSlots() {
+      const dateInput = document.getElementById('bookDate');
+      const timeSelect = document.getElementById('bookTime');
+      const date = dateInput.value;
+      
+      if (!date) {
+        timeSelect.innerHTML = '<option value="">Selecione primeiro uma data</option>';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/slots/${date}`);
+        const data = await response.json();
+        
+        timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+        
+        if (data.message) {
+          // Business closed on this day
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = data.message;
+          option.disabled = true;
+          timeSelect.appendChild(option);
+          timeSelect.disabled = true;
+        } else {
+          timeSelect.disabled = false;
+          data.slots.forEach(slot => {
+            const option = document.createElement('option');
+            option.value = slot.time;
+            option.textContent = slot.time;
+            if (!slot.available) {
+              option.textContent += ' (Ocupado)';
+              option.disabled = true;
+              option.classList.add('unavailable');
+            }
+            timeSelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading slots:', error);
+        timeSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
+      }
+    }
+
+    // Reset booking form
+    function resetBookingForm() {
+      const form = document.getElementById('bookingForm');
+      form.classList.remove('hidden');
+      document.getElementById('bookingSuccess').classList.remove('active');
+      form.querySelectorAll('.form-group').forEach(g => g.classList.remove('error'));
+      document.getElementById('bookBtn').classList.remove('loading');
+      form.querySelector('form').reset();
+      
+      // Reset time select
+      const timeSelect = document.getElementById('bookTime');
+      timeSelect.innerHTML = '<option value="">Selecione primeiro uma data</option>';
+      timeSelect.disabled = false;
+    }
+
+    // Handle booking submission
+    async function handleBookingSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('bookBtn');
+
+      // Clear previous errors
+      form.querySelectorAll('.form-group').forEach(g => g.classList.remove('error'));
+
+      // Validate
+      let valid = true;
+      const name = document.getElementById('bookName');
+      if (name.value.trim().length < 2) { name.closest('.form-group').classList.add('error'); valid = false; }
+
+      const email = document.getElementById('bookEmail');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) { email.closest('.form-group').classList.add('error'); valid = false; }
+
+      const phone = document.getElementById('bookPhone');
+      if (!/\+?[0-9\s]{9,}/.test(phone.value)) { phone.closest('.form-group').classList.add('error'); valid = false; }
+
+      const service = document.getElementById('bookService');
+      if (!service.value) { service.closest('.form-group').classList.add('error'); valid = false; }
+
+      const date = document.getElementById('bookDate');
+      if (!date.value) { date.closest('.form-group').classList.add('error'); valid = false; }
+
+      const time = document.getElementById('bookTime');
+      if (!time.value) { time.closest('.form-group').classList.add('error'); valid = false; }
+
+      if (!valid) return;
+
+      // Show loading
+      btn.classList.add('loading');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/appointments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.value,
+            email: email.value,
+            phone: phone.value,
+            service: service.value,
+            date: date.value,
+            time: time.value,
+            notes: document.getElementById('bookNotes').value
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert(result.error || 'Erro ao criar marcação');
+          btn.classList.remove('loading');
+          return;
+        }
+
+        const details = document.getElementById('bookingDetails');
+        const serviceName = service.options[service.selectedIndex].text.split(' — ')[0];
+        details.innerHTML = `
+          <p><strong>Serviço:</strong> ${serviceName}</p>
+          <p><strong>Data:</strong> ${new Date(date.value + 'T00:00:00').toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p><strong>Hora:</strong> ${time.value}</p>
+          <p><strong>Nome:</strong> ${name.value}</p>
+        `;
+
+        document.getElementById('bookingForm').classList.add('hidden');
+        document.getElementById('bookingSuccess').classList.add('active');
+        btn.classList.remove('loading');
+        
+        // Refresh slots
+        loadAvailableSlots();
+      } catch (error) {
+        console.error('Booking error:', error);
+        alert('Erro ao criar marcação. Por favor, tente novamente.');
+        btn.classList.remove('loading');
+      }
+    }
+
+    // Handle contact form
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      alert('Obrigado! Entraremos em contacto em breve.');
+      e.target.reset();
+    }
+
+    // Scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Initialize
+    setMinDate();
+  </script>
+</body>
+</html>
