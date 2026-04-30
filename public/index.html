@@ -1278,24 +1278,17 @@
             alert('Por favor, selecione um barbeiro');
             return;
           }
-          if (!document.getElementById('bookDate').value) {
-            alert('Por favor, selecione uma data no calendário');
-            return;
-          }
           if (!document.getElementById('bookService').value) {
             alert('Por favor, selecione um serviço');
             return;
           }
-          
-          // Show summary in Step 2
-          const barberName = document.querySelector('.barber-card.selected').textContent;
-          const dateStr = document.getElementById('bookDate').value;
-          const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
-          document.getElementById('selectedInfo').innerHTML = `<strong>Barbeiro:</strong> ${barberName} <br> <strong>Data:</strong> ${formattedDate}`;
-          
-          loadAvailableSlots();
+          renderCalendar();
         }
         if (currentStep === 2) {
+          if (!document.getElementById('bookDate').value) {
+            alert('Por favor, selecione uma data no calendário');
+            return;
+          }
           if (!document.getElementById('bookTime').value) {
             alert('Por favor, selecione um horário');
             return;
@@ -1319,8 +1312,7 @@
     function renderCalendar() {
       const grid = document.getElementById('calendarGrid');
       const monthLabel = document.getElementById('calendarMonth');
-      if (!grid || !monthLabel) return;
-
+      
       const year = calendarViewDate.getFullYear();
       const month = calendarViewDate.getMonth();
       
@@ -1332,7 +1324,7 @@
       
       grid.innerHTML = '';
       
-      ["D", "S", "T", "Q", "Q", "S", "S"].forEach(d => {
+      ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].forEach(d => {
         const el = document.createElement('div');
         el.className = 'calendar-weekday';
         el.textContent = d;
@@ -1379,6 +1371,7 @@
       element.classList.add('selected');
       document.getElementById('bookDate').value = dateStr;
       document.getElementById('bookTime').value = ''; 
+      loadAvailableSlots();
     }
 
     // Load barbers list as grid
@@ -1397,14 +1390,10 @@
             document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             document.getElementById('bookBarber').value = barber.id;
-            
-            // Show calendar once barber is selected
-            document.getElementById('calendarDisplay').style.display = 'block';
-            renderCalendar();
-            
-            // Clear date if barber changes
-            document.getElementById('bookDate').value = '';
-            document.getElementById('bookTime').value = '';
+            if (document.getElementById('bookDate').value) {
+              loadAvailableSlots();
+              renderCalendar();
+            }
           };
           barberGrid.appendChild(card);
         });
@@ -1419,7 +1408,7 @@
       const timeGrid = document.getElementById('timeGrid');
       const barber = document.getElementById('bookBarber').value;
       
-      if (!date || !timeGrid) return;
+      if (!date) return;
       timeGrid.innerHTML = '<p style="color:#666; font-size:14px;">A carregar horários...</p>';
       
       try {
@@ -1437,10 +1426,8 @@
             const btn = document.createElement('div');
             btn.className = `time-slot ${slot.available ? '' : 'unavailable'}`;
             btn.textContent = slot.time;
-            
             if (slot.available) {
               btn.onclick = (e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                 btn.classList.add('selected');
@@ -1550,6 +1537,6 @@
     }, { threshold: 0.1 });
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-    </script>
+</script>
 </body>
 </html>
