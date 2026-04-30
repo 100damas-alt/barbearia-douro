@@ -1282,6 +1282,10 @@
             alert('Por favor, selecione um serviço');
             return;
           }
+          if (!document.getElementById('bookDate').value) {
+            alert('Por favor, selecione uma data no calendário');
+            return;
+          }
           renderCalendar();
         }
         if (currentStep === 2) {
@@ -1390,9 +1394,13 @@
             document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             document.getElementById('bookBarber').value = barber.id;
+            
+            // Fix: Show calendar when barber is selected
+            document.getElementById('calendarDisplay').style.display = 'block';
+            renderCalendar();
+            
             if (document.getElementById('bookDate').value) {
               loadAvailableSlots();
-              renderCalendar();
             }
           };
           barberGrid.appendChild(card);
