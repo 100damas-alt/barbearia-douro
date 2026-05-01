@@ -475,3 +475,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Twilio configured: ${twilioClient ? 'Yes' : 'No'}`);
   console.log(`Barbers: ${loadBarbers().map(b => b.name).join(', ')}`);
 });// Force redeploy comment
+// Triggering redeploy at Fri May  1 00:34:08 UTC 2026
