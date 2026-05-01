@@ -695,6 +695,7 @@
       padding: 16px;
       margin-bottom: 24px;
       color: var(--black);
+      position: relative;
     }
     .calendar-header {
       display: flex;
@@ -1157,8 +1158,11 @@
             </div>
             
             <!-- Calendar Integrated into Step 1 -->
-            <div id="calendarDisplay" style="display: none;">
-              <div class="calendar-container">
+            <div id="calendarDisplay">
+              <div class="calendar-container" id="calendarContainer" style="opacity: 0.5; pointer-events: none;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 4px; z-index: 10; width: 80%; text-align: center; font-size: 14px;" id="calendarOverlay">
+                  Selecione um barbeiro primeiro
+                </div>
                 <div class="calendar-header">
                   <button type="button" class="calendar-nav-btn" onclick="changeMonth(-1)">&lt;</button>
                   <div class="calendar-month-name" id="calendarMonth">Maio 2024</div>
@@ -1396,7 +1400,9 @@
             document.getElementById('bookBarber').value = barber.id;
             
             // Fix: Show calendar when barber is selected
-            document.getElementById('calendarDisplay').style.display = 'block';
+            document.getElementById('calendarContainer').style.opacity = '1';
+            document.getElementById('calendarContainer').style.pointerEvents = 'all';
+            document.getElementById('calendarOverlay').style.display = 'none';
             renderCalendar();
             
             if (document.getElementById('bookDate').value) {
@@ -1473,8 +1479,11 @@
       document.getElementById('bookBarber').value = '';
       document.getElementById('bookDate').value = '';
       document.getElementById('bookTime').value = '';
+      document.getElementById('calendarContainer').style.opacity = '0.5';
+      document.getElementById('calendarContainer').style.pointerEvents = 'none';
+      document.getElementById('calendarOverlay').style.display = 'block';
       document.getElementById('timeGrid').innerHTML = '<p style="color:#666; font-size:14px;">Selecione primeiro uma data no calendário</p>';
-    }
+      }
 
     async function handleBookingSubmit(e) {
       e.preventDefault();
