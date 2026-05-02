@@ -109,6 +109,9 @@ function saveMessages(messages) {
 
 // ============ Twilio SMS Helper ============
 
+// Messaging Service SID for Alphanumeric Sender ID "RESERVA"
+const TWILIO_MS_SID = 'MG4ba7263f5507a6307f561641bf0fd357';
+
 async function sendSms(to, message) {
   if (!twilioClient) {
     console.log('Twilio not configured. SMS would be sent to:', to);
@@ -116,11 +119,11 @@ async function sendSms(to, message) {
   }
 
   try {
-    const from = process.env.TWILIO_FROM_NUMBER || 'BDOURO';
-    
+    // Using Messaging Service SID instead of a single number 
+    // to enable Alphanumeric Sender ID "RESERVA"
     const result = await twilioClient.messages.create({
       body: message,
-      from: from,
+      messagingServiceSid: TWILIO_MS_SID,
       to: to
     });
     
