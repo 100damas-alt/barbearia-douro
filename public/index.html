@@ -449,11 +449,12 @@
       background: var(--black);
       border: 1px solid #333;
       border-radius: 4px;
-      padding: 14px 16px;
+      padding: 16px;
       font-family: 'Lato', sans-serif;
       font-size: 16px;
       color: var(--warm-white);
       transition: border-color 0.3s ease;
+      -webkit-appearance: none;
     }
 
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -538,6 +539,17 @@
       overflow-y: auto;
       transform: translateY(20px);
       transition: transform 0.3s ease;
+    }
+
+    @media (max-width: 480px) {
+      .modal {
+        max-height: 100vh;
+        height: 100%;
+        border-radius: 0;
+        margin: 0;
+      }
+      .modal-body { padding: 16px; }
+      .modal-header { padding: 16px 24px; }
     }
 
     .modal-overlay.active .modal { transform: translateY(0); }
@@ -667,17 +679,24 @@
     .barber-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      gap: 12px;
       margin-bottom: 24px;
+    }
+    @media (max-width: 400px) {
+      .barber-grid { grid-template-columns: 1fr; }
     }
     .barber-card {
       background: var(--black);
       border: 1px solid #333;
-      padding: 20px;
+      padding: 16px;
       border-radius: 8px;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s ease;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .barber-card:hover { border-color: var(--champagne); }
     .barber-card.selected {
@@ -777,15 +796,26 @@
       gap: 8px;
       margin-top: 12px;
     }
+    @media (max-width: 480px) {
+      .time-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    }
+    @media (max-width: 350px) {
+      .time-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     .time-slot {
-      padding: 10px 4px;
+      padding: 12px 4px;
       background: var(--black);
       border: 1px solid #333;
       border-radius: 4px;
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .time-slot:hover:not(.unavailable) {
       border-color: var(--champagne);
